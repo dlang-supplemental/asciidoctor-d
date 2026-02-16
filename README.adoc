@@ -1,0 +1,32 @@
+= Asciidoctor-D
+AMDphreak <https://github.com/AMDphreak>
+:toc:
+:icons: font
+
+Native D implementation of Asciidoctor.
+
+== Purpose
+
+This project aims to provide a fast, memory-safe, and correct implementation of AsciiDoc processing in the D programming language.
+
+Primary goals:
+- Performance (native compilation via LDC/GDC)
+- Correctness (parsing and AST fidelity)
+- Better error messages than current Ruby implementation
+- Clean, maintainable codebase without "piping data to a defective core"
+
+== Usage
+
+[source,bash]
+----
+dub build
+./asciidoctor-d input.adoc
+----
+
+== Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+== License
+
+MIT

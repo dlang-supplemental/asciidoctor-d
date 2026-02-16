@@ -1,0 +1,6 @@
+name: asciidoctor-d
+title: Asciidoctor (D)
+version: ~
+start_page: ROOT:index.adoc
+nav:
+  - modules/ROOT/nav.adoc

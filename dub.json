@@ -1,0 +1,22 @@
+{
+	"name": "asciidoctor-d",
+	"description": "Native D implementation of Asciidoctor",
+	"authors": [
+		"AMDphreak"
+	],
+	"homepage": "https://github.com/the-dev-center/asciidoctor-d",
+	"copyright": "Copyright © 2026, AMDphreak",
+	"license": "MIT",
+	"targetType": "library",
+	"configurations": [
+		{
+			"name": "library",
+			"targetType": "library"
+		},
+		{
+			"name": "application",
+			"targetType": "executable",
+			"mainSourceFile": "source/app.d"
+		}
+	]
+}

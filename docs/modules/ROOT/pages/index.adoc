@@ -1,0 +1,28 @@
+= Asciidoctor (D)
+:navtitle: Introduction
+
+Welcome to the documentation for the native D implementation of Asciidoctor.
+
+== Overview
+
+This project provides a high-performance, memory-safe implementation of the AsciiDoc processor using the D programming language.
+
+== Features
+
+* Native D implementation
+* Fast parsing and conversion
+* HTML5 output backend
+* Extensible architecture
+
+== Getting Started
+
+[source,bash]
+----
+dub add asciidoctor-d
+----
+
+import asciidoctor;
+void main() {
+    auto result = convert("= Hello World");
+    writeln(result);
+}

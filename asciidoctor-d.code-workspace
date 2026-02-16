@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"d.grammar.bracketStyle": "allman",
+		"dprint.verbose": true,
+		"dprint.config": "dprint.jsonc",
+		"editor.formatOnSave": true
+	}
+}
