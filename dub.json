@@ -4,7 +4,7 @@
 	"authors": [
 		"AMDphreak"
 	],
-	"homepage": "https://github.com/the-dev-center/asciidoctor-d",
+	"homepage": "https://github.com/devcntr-app/asciidoctor-d",
 	"copyright": "Copyright © 2026, AMDphreak",
 	"license": "MIT",
 	"targetType": "library",
@@ -20,3 +20,4 @@
 		}
 	]
 }
+

@@ -1,0 +1,185 @@
+= AsciiDoc Comprehensive Examples
+Author Name <author@example.com>
+v1.0, 2023-10-27
+:toc: left
+:icons: font
+:source-highlighter: highlight.js
+:imagesdir: images
+:sectnums:
+:experimental:
+
+== Structure and Headers
+
+= Document Title (Level 0)
+
+== Level 1 Section
+
+=== Level 2 Section
+
+==== Level 3 Section
+
+===== Level 4 Section
+
+====== Level 5 Section
+
+== Paragraphs and Text
+
+Normal paragraph with *bold text*, _italic text_, `monospace text`, #highlighted text# and ~subscript~ / ^superscript^.
+
+This is a paragraph +
+with a manual line break.
+
+ [.lead]
+ This is a lead paragraph (styled larger).
+
+== Lists
+
+=== Unordered Lists
+* Item 1
+** Item 1.1
+*** Item 1.1.1
+* Item 2
+* Item 3
+
+=== Ordered Lists
+. Step 1
+. Step 2
+.. Step 2a
+.. Step 2b
+. Step 3
+
+=== Checklists
+* [ ] Todo item
+* [x] Completed item
+* [*] Checked item
+
+=== Description Lists
+Term:: Definition
+Nested Term::: Nested Definition
+Long Term::
+This definition is on a new line.
+
+== Delimited Blocks
+
+=== Listing and Source
+
+----
+This is a standard listing block.
+It preserves whitespace.
+----
+
+[source,python]
+.Python Example
+----
+def hello():
+    print("Hello World")
+----
+
+=== Literal Block
+
+....
+This is a literal block.
+No substitutions are performed here (mostly).
+....
+
+=== Admonitions
+
+NOTE: This is a simple note.
+
+[IMPORTANT]
+.Important Check
+====
+This is a comprehensive admonition block.
+It can contain multiple paragraphs.
+====
+
+=== Quotes
+
+[quote, Abraham Lincoln, Address at Gettysburg]
+____
+Four score and seven years ago our fathers brought forth on this continent a new nation...
+____
+
+=== Sidebars
+
+.Sidebar Title
+****
+This is a sidebar.
+It stands out from the main text.
+****
+
+=== Open Blocks
+
+--
+An open block can act as an anonymous container.
+--
+
+=== Passthrough
+
+++++
+<p>Raw HTML content</p>
+++++
+
+== Tables
+
+|===
+|Header 1 |Header 2 |Header 3
+
+|Cell 1,1
+|Cell 1,2
+|Cell 1,3
+
+|Cell 2,1
+|Cell 2,2
+|Cell 2,3
+|===
+
+[cols="1,2,1"]
+|===
+|Col 1 |Col 2 |Col 3
+
+|Fixed
+|Double width
+|Fixed
+|===
+
+|===
+|Header 1 |Header 2
+
+|Cell with
+multiline content
+|Cell 2
+
+|Cell 3
+a|Cell with AsciiDoc:
+* List item
+* List item
+|===
+
+
+== Multimedia and Macros
+
+=== Images
+image::sunset.jpg[Sunset, 300, 200]
+
+Inline image: image:icon.png[Icon]
+
+=== Links
+https://asciidoctor.org[Asciidoctor]
+link:index.html[Relative Link]
+
+=== Buttons and Keyboard (Experimental)
+Press kbd:[Ctrl+C] to copy.
+Click btn:[Save] to commit changes.
+
+== Attributes and Substitutions
+
+:my-attribute: Custom Value
+
+The value of my-attribute is {my-attribute}.
+
+ifdef::env-github[]
+This content is only shown on GitHub.
+endif::[]
+
+include::footer.adoc[]

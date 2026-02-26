@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>AsciiDoc Comprehensive Examples</title></head><body><h1>AsciiDoc Comprehensive Examples</h1><div class="paragraph"><p>Author Name <author@example.com>
+v1.0, 2023-10-27
+:toc: left
+:icons: font
+:source-highlighter: highlight.js
+:imagesdir: images
+:sectnums:
+:experimental:</p></div><div class="sect1"><h2>Structure and Headers</h2><div class="sectionbody"></div></div><div class="sect0"><h1>Document Title (Level 0)</h1><div class="sectionbody"></div></div><div class="sect1"><h2>Level 1 Section</h2><div class="sectionbody"></div></div><div class="sect2"><h3>Level 2 Section</h3><div class="sectionbody"></div></div><div class="sect3"><h4>Level 3 Section</h4><div class="sectionbody"></div></div><div class="sect4"><h5>Level 4 Section</h5><div class="sectionbody"></div></div><div class="sect5"><h6>Level 5 Section</h6><div class="sectionbody"></div></div><div class="sect1"><h2>Paragraphs and Text</h2><div class="sectionbody"></div></div><div class="paragraph"><p>Normal paragraph with *bold text*, _italic text_, `monospace text`, #highlighted text# and ~subscript~ / ^superscript^.</p></div><div class="paragraph"><p>This is a paragraph +
+with a manual line break.</p></div><div class="paragraph"><p> [.lead]
+ This is a lead paragraph (styled larger).</p></div><div class="sect1"><h2>Lists</h2><div class="sectionbody"></div></div><div class="sect2"><h3>Unordered Lists</h3><div class="sectionbody"></div></div><div class="paragraph"><p>* Item 1
+** Item 1.1
+*** Item 1.1.1
+* Item 2
+* Item 3</p></div><div class="sect2"><h3>Ordered Lists</h3><div class="sectionbody"></div></div><div class="paragraph"><p>. Step 1
+. Step 2
+.. Step 2a
+.. Step 2b
+. Step 3</p></div><div class="sect2"><h3>Checklists</h3><div class="sectionbody"></div></div><div class="paragraph"><p>* [ ] Todo item
+* [x] Completed item
+* [*] Checked item</p></div><div class="sect2"><h3>Description Lists</h3><div class="sectionbody"></div></div><div class="paragraph"><p>Term:: Definition
+Nested Term::: Nested Definition
+Long Term::
+This definition is on a new line.</p></div><div class="sect1"><h2>Delimited Blocks</h2><div class="sectionbody"></div></div><div class="sect2"><h3>Listing and Source</h3><div class="sectionbody"></div></div><div class="paragraph"><p>----
+This is a standard listing block.
+It preserves whitespace.
+----</p></div><div class="paragraph"><p>[source,python]
+.Python Example
+----
+def hello():
+    print("Hello World")
+----</p></div><div class="sect2"><h3>Literal Block</h3><div class="sectionbody"></div></div><div class="paragraph"><p>....
+This is a literal block.
+No substitutions are performed here (mostly).
+....</p></div><div class="sect2"><h3>Admonitions</h3><div class="sectionbody"></div></div><div class="paragraph"><p>NOTE: This is a simple note.</p></div><div class="paragraph"><p>[IMPORTANT]
+.Important Check</p></div><div class="sect3"><h4></h4><div class="sectionbody"></div></div><div class="paragraph"><p>This is a comprehensive admonition block.
+It can contain multiple paragraphs.</p></div><div class="sect3"><h4></h4><div class="sectionbody"></div></div><div class="sect2"><h3>Quotes</h3><div class="sectionbody"></div></div><div class="paragraph"><p>[quote, Abraham Lincoln, Address at Gettysburg]
+____
+Four score and seven years ago our fathers brought forth on this continent a new nation...
+____</p></div><div class="sect2"><h3>Sidebars</h3><div class="sectionbody"></div></div><div class="paragraph"><p>.Sidebar Title
+****
+This is a sidebar.
+It stands out from the main text.
+****</p></div><div class="sect2"><h3>Open Blocks</h3><div class="sectionbody"></div></div><div class="paragraph"><p>--
+An open block can act as an anonymous container.
+--</p></div><div class="sect2"><h3>Passthrough</h3><div class="sectionbody"></div></div><div class="paragraph"><p>++++
+<p>Raw HTML content</p>
+++++</p></div><div class="sect1"><h2>Tables</h2><div class="sectionbody"></div></div><div class="paragraph"><p>|===
+|Header 1 |Header 2 |Header 3</p></div><div class="paragraph"><p>|Cell 1,1
+|Cell 1,2
+|Cell 1,3</p></div><div class="paragraph"><p>|Cell 2,1
+|Cell 2,2
+|Cell 2,3
+|===</p></div><div class="paragraph"><p>[cols="1,2,1"]
+|===
+|Col 1 |Col 2 |Col 3</p></div><div class="paragraph"><p>|Fixed
+|Double width
+|Fixed
+|===</p></div><div class="paragraph"><p>|===
+|Header 1 |Header 2</p></div><div class="paragraph"><p>|Cell with
+multiline content
+|Cell 2</p></div><div class="paragraph"><p>|Cell 3
+a|Cell with AsciiDoc:
+* List item
+* List item
+|===</p></div><div class="sect1"><h2>Multimedia and Macros</h2><div class="sectionbody"></div></div><div class="sect2"><h3>Images</h3><div class="sectionbody"></div></div><div class="paragraph"><p>image::sunset.jpg[Sunset, 300, 200]</p></div><div class="paragraph"><p>Inline image: image:icon.png[Icon]</p></div><div class="sect2"><h3>Links</h3><div class="sectionbody"></div></div><div class="paragraph"><p>https://asciidoctor.org[Asciidoctor]
+link:index.html[Relative Link]</p></div><div class="sect2"><h3>Buttons and Keyboard (Experimental)</h3><div class="sectionbody"></div></div><div class="paragraph"><p>Press kbd:[Ctrl+C] to copy.
+Click btn:[Save] to commit changes.</p></div><div class="sect1"><h2>Attributes and Substitutions</h2><div class="sectionbody"></div></div><div class="paragraph"><p>:my-attribute: Custom Value</p></div><div class="paragraph"><p>The value of my-attribute is {my-attribute}.</p></div><div class="paragraph"><p>ifdef::env-github[]
+This content is only shown on GitHub.
+endif::[]</p></div><div class="paragraph"><p>include::footer.adoc[]</p></div></body></html>
