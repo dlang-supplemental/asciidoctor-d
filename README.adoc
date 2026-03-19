@@ -5,6 +5,8 @@ AMDphreak <https://github.com/AMDphreak>
 
 Native D implementation of Asciidoctor.
 
+Repository: https://github.com/dlang-supplemental/asciidoctor-d
+
 == Purpose
 
 This project aims to provide a fast, memory-safe, and correct implementation of AsciiDoc processing in the D programming language.
