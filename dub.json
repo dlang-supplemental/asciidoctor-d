@@ -4,7 +4,7 @@
 	"authors": [
 		"AMDphreak"
 	],
-	"homepage": "https://github.com/dlang-supplemental/asciidoctor-dlang",
+	"homepage": "https://github.com/dlang-supplemental/asciidoctor-d",
 	"copyright": "Copyright © 2026, AMDphreak",
 	"license": "MIT",
 	"targetType": "library",
