@@ -15,7 +15,11 @@ __debug_bin
 *.dylib
 *.lst
 .vs/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 bin/
 test-results/
 cov/
