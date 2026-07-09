@@ -116,15 +116,15 @@ jobs:
           command -v dub
           command -v ldc2
 
-          EXTRA_ARGS=()
+          # Avoid empty-array expansion under `set -u` (macOS bash is picky).
           if [[ "${CROSS_ARCH:-}" == "aarch64" ]]; then
             # Windows ARM64 via LDC multilib + MSVC arm64 env (ilammy/msvc-dev-cmd)
-            EXTRA_ARGS+=(--arch=aarch64)
             export DFLAGS="${DFLAGS:-} -mtriple=aarch64-windows-msvc"
             echo "Cross-compiling for aarch64-windows-msvc"
+            dub build --config=application --build=release --compiler=ldc2 --arch=aarch64
+          else
+            dub build --config=application --build=release --compiler=ldc2
           fi
-
-          dub build --config=application --build=release --compiler=ldc2 "${EXTRA_ARGS[@]}"
           mkdir -p dist
           if [ -f asciidoctor-d.exe ]; then
             cp asciidoctor-d.exe "dist/${{ matrix.exe }}"
