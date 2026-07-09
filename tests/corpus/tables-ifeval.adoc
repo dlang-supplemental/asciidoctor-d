@@ -1,0 +1,17 @@
+= Tables and Ifeval
+:ver: 2
+
+[cols="1,3"]
+|===
+|A |B
+
+|1 |2
+|===
+
+ifeval::["{ver}" == "2"]
+shown-yes
+endif::[]
+
+ifeval::["{ver}" == "1"]
+shown-no
+endif::[]

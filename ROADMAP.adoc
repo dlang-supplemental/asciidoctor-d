@@ -1,62 +1,52 @@
-# Roadmap: asciidoctor-d → SoT for editors
+= Roadmap: asciidoctor-d → SoT for editors
+:toc:
 
 Goal: a native D AsciiDoc processor correct enough to power LSP semantic tokens,
-diagnostics, and HTML conversion — then plug into `antora-supplemental/zed-asciidoc`.
+diagnostics, and HTML conversion — then plug into
+`antora-supplemental/zed-asciidoc`.
 
-## Why D (still)
+Feature-level status lives in link:README.adoc[README.adoc] (completion rate +
+tables). This file tracks milestones.
 
-- Native speed for full-document reparse under debounce
-- One engine for convert + tokens (true source of truth)
-- MIT, owned under `dlang-supplemental`
+== Milestones
 
-## Phased plan (compress “years” into milestones)
+=== M0 — Skeleton ✅
 
-### M0 — Skeleton (done)
+* Document / Section / Block AST
+* Header + paragraph parse
+* HTML5 converter + CLI
 
-- Document / Section / Block AST stubs
-- Header + paragraph parse
-- HTML5 converter stub
-- CLI `asciidoctor-d`
+=== M1 — Block structure ✅
 
-### M1 — Block structure (next)
+* Delimited blocks, attribute lists, admonitions
+* Lists (incl. checklist / dlist), tables (basic)
+* Includes + ifdef/ifndef
 
-- Delimited blocks: listing, literal, sidebar, example, quote, passthrough, open, comment
-- Attribute lists on blocks (`[source,d]`, `[NOTE]`)
-- Admonition paragraph form (`NOTE:`)
-- Unordered / ordered lists (flat first; nest later)
-- Blank-line paragraph joining
+=== M2 — Inline + macros ✅
 
-### M2 — Inline + macros
+* Emphasis, links, images, UI macros, attribute refs
+* Replacements and passthroughs
 
-- Constrained / unconstrained emphasis, mono, highlight
-- Links, images, includes (file include with base_dir)
-- Attribute references `{name}`
-- Callouts
+=== M3 — Tables + preprocessor ✅
 
-### M3 — Tables + preprocessor
+* Nested list HTML fidelity
+* `cols=` widths + `a|` cell reparse
+* Real `ifeval` expression evaluation
+* TOC, callouts, discrete headings
 
-- `|===` tables
-- `ifdef` / `ifeval` / `include::` resolution
-- Document attribute header
+=== M4 — Fidelity harness 🟡
 
-### M4 — Fidelity harness
+* ✅ Structural corpus harness (`scripts/run-corpus.ps1`)
+* 🟡 Optional Asciidoctor reference HTML when gem is installed
+* ❌ CI gate + full TCK byte-diff
 
-- Diff HTML against Asciidoctor on a corpus (AsciiDoc TCK + Antora samples)
-- Corpus gate in CI
+=== M5 — Editor surface 🟡
 
-### M5 — Editor surface
+* ✅ `semanticTokens()` / `encodeLspData()` library API
+* ❌ Wire as backend for `zed-asciidoc` LSP
 
-- Emit LSP semantic tokens from the same AST
-- Wire as backend for `zed-asciidoc` (replace Asciidoctor.js preview path)
-- Optional: keep Asciidoctor.js as fallback converter until M4 passes
+== Non-goals (for now)
 
-## Parallel track (Zed)
-
-Until M5: `zed-asciidoc` uses Asciidoctor.js for **browser** preview only.
-Highlighting stays tree-sitter until semantic tokens land.
-
-## Non-goals (for now)
-
-- PDF / EPUB backends
-- Full extension ecosystem parity with Ruby Asciidoctor
-- In-editor webview (blocked on Zed API)
+* PDF / EPUB backends
+* Full Ruby extension ecosystem parity
+* In-editor webview (blocked on Zed API)

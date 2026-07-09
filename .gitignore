@@ -25,3 +25,7 @@ test-results/
 cov/
 coverage/
 *.json-e
+test-out.html
+doc/comprehensive-out.html
+tmp*.adoc
+tests/out/

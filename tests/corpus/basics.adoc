@@ -1,0 +1,25 @@
+= Corpus Basics
+:toc:
+:name: World
+
+Hello *{name}*.
+
+== Section One
+
+NOTE: Important.
+
+----
+code <1>
+----
+<1> a callout
+
+xref:section-one[Jump]
+
+footnote:[A note]
+
+'''
+
+[discrete]
+== Discrete
+
+Done.
