@@ -6,6 +6,8 @@ public import asciidoctor.converter;
 public import asciidoctor.inline;
 public import asciidoctor.util;
 public import asciidoctor.semantictokens;
+public import asciidoctor.manpage;
+public import asciidoctor.pdf;
 
 import std.path : dirName;
 

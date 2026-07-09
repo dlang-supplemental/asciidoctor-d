@@ -24,6 +24,12 @@ class ConverterFactory
         {
         case "html5":
             return new Html5Converter();
+        case "manpage":
+            import asciidoctor.manpage : ManpageConverter;
+            return new ManpageConverter();
+        case "pdf":
+            import asciidoctor.pdf : PdfConverter;
+            return new PdfConverter();
         default:
             throw new Exception("Unknown backend: " ~ backend);
         }

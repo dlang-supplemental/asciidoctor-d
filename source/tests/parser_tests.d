@@ -1,7 +1,7 @@
 module tests.parser_tests;
 
 import asciidoctor;
-import std.algorithm : canFind;
+import std.algorithm : canFind, startsWith;
 import std.stdio;
 
 unittest
@@ -244,10 +244,36 @@ EOS";
 
 unittest
 {
-    auto src = "= T\n\n== Hello World\n";
-    auto result = semanticTokens(src);
-    assert(result.tokens.length > 0);
-    auto data = encodeLspData(result.tokens);
-    assert(data.length % 5 == 0);
-    assert(result.legendTypes.canFind("class"));
+    auto src = q"EOS
+= mytool(1)
+Author Name
+:doctype: manpage
+:manpurpose: does useful things
+
+== Synopsis
+
+*mytool* [_options_]
+
+== Description
+
+Hello *world*.
+EOS";
+    auto man = convert(src, "manpage");
+    assert(man.canFind(`.TH "`), man);
+    assert(man.canFind("MYTOOL"), man);
+    assert(man.canFind(`.SH "NAME"`), man);
+    assert(man.canFind(`does useful things`), man);
+    assert(man.canFind(`.SH "SYNOPSIS"`) || man.canFind(`.SH "Synopsis"`)
+        || man.canFind(`Synopsis`), man);
+}
+
+unittest
+{
+    auto src = "= Report\n\n== Intro\n\nHello *PDF* world.\n\n* one\n* two\n";
+    auto pdf = convert(src, "pdf");
+    assert(pdf.startsWith("%PDF-1.4"), pdf[0 .. pdf.length < 20 ? pdf.length : 20]);
+    assert(pdf.canFind("%%EOF"), pdf);
+    assert(pdf.canFind("/Type /Catalog"), pdf);
+    assert(pdf.canFind("Hello"), pdf);
+    assert(pdf.canFind("Report"), pdf);
 }

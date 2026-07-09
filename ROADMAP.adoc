@@ -43,10 +43,15 @@ tables). This file tracks milestones.
 === M5 — Editor surface 🟡
 
 * ✅ `semanticTokens()` / `encodeLspData()` library API
-* ❌ Wire as backend for `zed-asciidoc` LSP
+* 🟡 Wired as preview backend for `zed-asciidoc` (engine=`asciidoctor-d`)
+
+=== M6 — Extra backends ✅
+
+* ✅ `manpage` (groff) backend
+* ✅ Native `pdf` backend (minimal PDF 1.4 text layout)
 
 == Non-goals (for now)
 
-* PDF / EPUB backends
+* EPUB / full print-CSS PDF engines (Prince, weasyprint parity)
 * Full Ruby extension ecosystem parity
 * In-editor webview (blocked on Zed API)

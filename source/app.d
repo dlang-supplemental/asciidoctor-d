@@ -3,7 +3,21 @@ import std.file;
 import std.path;
 import std.string;
 import std.getopt;
+import std.uni : toLower;
 import asciidoctor;
+
+string defaultExtension(string backend)
+{
+    switch (backend.toLower)
+    {
+    case "manpage":
+        return ".1";
+    case "pdf":
+        return ".pdf";
+    default:
+        return ".html";
+    }
+}
 
 version (unittest)
 {
@@ -23,7 +37,7 @@ else
 
         auto opts = getopt(
             args,
-            "backend|b", "Output format (html5)", &backend,
+            "backend|b", "Output format (html5, manpage, pdf)", &backend,
             "destination-dir|D", "Output directory", &destination,
             "out-file|o", "Output file path", &outFile,
             "help|h", "Show this help", &help
@@ -52,10 +66,14 @@ else
         else
         {
             auto dir = destination.length ? destination : inputFile.dirName;
-            outputFilename = buildPath(dir, inputFile.baseName.setExtension(".html"));
+            outputFilename = buildPath(dir, inputFile.baseName.setExtension(defaultExtension(backend)));
         }
 
-        std.file.write(outputFilename, result);
+        // PDF is binary; write as ubyte to avoid text encoding surprises on Windows.
+        if (backend.toLower == "pdf")
+            std.file.write(outputFilename, cast(void[]) result);
+        else
+            std.file.write(outputFilename, result);
         writeln("Converted ", inputFile, " to ", outputFilename);
     }
 }

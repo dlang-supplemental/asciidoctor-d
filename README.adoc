@@ -8,7 +8,7 @@ Native D implementation of Asciidoctor (AsciiDoc → AST → HTML5).
 
 Repository: https://github.com/dlang-supplemental/asciidoctor-d
 
-== Completion rate: *98%* (54 / 55; 54 done, 1 not started)
+== Completion rate: *100%* (55 / 55; 55 done, 0 not started)
 
 Statuses: ✅ done · 🟡 partial · ❌ not started
 
@@ -277,8 +277,8 @@ Keep this table current when features land. The percentage above is
 | `pwsh scripts/run-corpus.ps1` + `.expect` files
 
 | PDF / manpage backends
-| ❌
-|
+| ✅
+| `-b manpage` (groff) · `-b pdf` (native PDF 1.4 text layout)
 
 | LSP semantic tokens export
 | ✅
@@ -303,6 +303,8 @@ Primary goals:
 dub build --config=application
 ./asciidoctor-d input.adoc
 ./asciidoctor-d -o out.html input.adoc
+./asciidoctor-d -b manpage -o prog.1 prog.adoc
+./asciidoctor-d -b pdf -o out.pdf input.adoc
 ----
 
 Library API:
@@ -311,6 +313,8 @@ Library API:
 ----
 import asciidoctor;
 auto html = convert(source, "html5", baseDir);
+auto man = convert(source, "manpage", baseDir);
+auto pdf = convert(source, "pdf", baseDir);
 ----
 
 == Development

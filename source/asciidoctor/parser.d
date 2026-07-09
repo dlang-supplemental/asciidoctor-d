@@ -21,6 +21,10 @@ class Parser
 
     this(string source, string baseDir = ".")
     {
+        // Strip UTF-8 BOM if present (common on Windows editors).
+        if (source.length >= 3
+            && source[0] == 0xEF && source[1] == 0xBB && source[2] == 0xBF)
+            source = source[3 .. $];
         this.lines = source.splitLines();
         this.currentLine = 0;
         this.baseDir = baseDir;
