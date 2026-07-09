@@ -333,6 +333,8 @@ auto lspData = encodeLspData(result.tokens);
 
 Roadmap detail: link:ROADMAP.adoc[ROADMAP.adoc]
 
+Distribution (releases + Zed wiring): link:docs/DISTRIBUTION.adoc[docs/DISTRIBUTION.adoc]
+
 == License
 
 MIT

@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install LDC
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ldc dub
+      - name: Test
+        run: dub test --force
+      - name: Build CLI
+        run: dub build --config=application --build=release
+      - name: Corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          BIN=./asciidoctor-d
+          test -x "$BIN"
+          mkdir -p tests/out
+          failed=0
+          for case in tests/corpus/*.adoc; do
+            name=$(basename "$case" .adoc)
+            "$BIN" "$case" -o "tests/out/${name}.html"
+            expect="tests/corpus/${name}.expect"
+            if [[ -f "$expect" ]]; then
+              html=$(cat "tests/out/${name}.html")
+              ok=1
+              while IFS= read -r line || [[ -n "$line" ]]; do
+                line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+                [[ -z "$line" || "$line" == \#* ]] && continue
+                if [[ "$line" == !* ]]; then
+                  needle=${line:1}
+                  if [[ "$html" == *"$needle"* ]]; then
+                    echo "FAIL $name — unexpected: $needle"
+                    ok=0
+                  fi
+                elif [[ "$html" != *"$line"* ]]; then
+                  echo "FAIL $name — missing: $line"
+                  ok=0
+                fi
+              done < "$expect"
+              if [[ "$ok" -eq 1 ]]; then
+                echo "PASS $name"
+              else
+                failed=1
+              fi
+            else
+              echo "GEN  $name (no .expect)"
+            fi
+          done
+          exit "$failed"

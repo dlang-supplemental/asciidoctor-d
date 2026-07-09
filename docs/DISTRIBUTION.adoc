@@ -1,0 +1,73 @@
+# Architecture (keep these names)
+
+## Packages
+
+| Name | Repo | Job |
+|---|---|---|
+| **asciidoctor-d** | `dlang-supplemental/asciidoctor-d` | The engine: parse AsciiDoc, make HTML, make coloring tokens |
+| **asciidoc-lsp** | lives inside `antora-supplemental/zed-asciidoc` (`lsp/`) | The talker: speaks Language Server Protocol to Zed |
+| **zed-asciidoc** | `antora-supplemental/zed-asciidoc` | The plugin: tree-sitter + starts the LSP |
+
+Do **not** rename the engine to `asciidoctor-lsp-d`.
+That mixes “engine” and “editor talker” into one name and gets confusing.
+
+```
+Zed  --LSP-->  asciidoc-lsp (Node)  --calls-->  asciidoctor-d (optional)
+                 |                      or
+                 +-- uses Asciidoctor.js (default preview)
+```
+
+## Engines (user setting)
+
+In Zed `settings.json` (there is no extension options GUI yet):
+
+```json
+{
+  "lsp": {
+    "asciidoc-lsp": {
+      "settings": {
+        "engine": "asciidoctor-js",
+        "asciidoctorDPath": "optional/absolute/path/to/asciidoctor-d"
+      }
+    }
+  },
+  "languages": {
+    "AsciiDoc": {
+      "semantic_tokens": "off"
+    }
+  }
+}
+```
+
+`engine` values:
+
+- `tree-sitter` — coloring only from grammar; preview disabled
+- `asciidoctor-js` — preview via Asciidoctor.js (needs Node; default)
+- `asciidoctor-d` — preview via native CLI; extension downloads GitHub Release assets when missing
+
+## Releases
+
+Tag `vX.Y.Z` on `asciidoctor-d` → GitHub Actions uploads:
+
+- `asciidoctor-d-windows-x64.zip`
+- `asciidoctor-d-linux-x64.tar.gz`
+- `asciidoctor-d-macos-arm64.tar.gz`
+- `asciidoctor-d-macos-x64.tar.gz`
+
+Zed extension (`zed-asciidoc`) downloads the matching asset when
+`engine` is `asciidoctor-d` and injects `asciidoctorDPath` into LSP settings.
+
+### Manual release smoke test
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+# or: gh workflow run release.yml
+```
+
+Then confirm the Release page has the four archives.
+
+## Zed settings UI
+
+There is no extension options GUI yet. Tracked upstream:
+https://github.com/zed-industries/zed/issues/60647
