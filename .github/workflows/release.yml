@@ -27,7 +27,7 @@ jobs:
             target: macos-arm64
             exe: asciidoctor-d
             archive: tar.gz
-          - os: macos-13
+          - os: macos-15-intel
             target: macos-x64
             exe: asciidoctor-d
             archive: tar.gz

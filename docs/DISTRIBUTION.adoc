@@ -51,8 +51,8 @@ Tag `vX.Y.Z` on `asciidoctor-d` → GitHub Actions uploads:
 
 - `asciidoctor-d-windows-x64.zip`
 - `asciidoctor-d-linux-x64.tar.gz`
-- `asciidoctor-d-macos-arm64.tar.gz`
-- `asciidoctor-d-macos-x64.tar.gz`
+- `asciidoctor-d-macos-arm64.tar.gz` (`macos-latest`, Apple Silicon)
+- `asciidoctor-d-macos-x64.tar.gz` (`macos-15-intel`; last Intel Macs were sold ~2023)
 
 Zed extension (`zed-asciidoc`) downloads the matching asset when
 `engine` is `asciidoctor-d` and injects `asciidoctorDPath` into LSP settings.
