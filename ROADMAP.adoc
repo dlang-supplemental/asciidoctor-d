@@ -1,0 +1,62 @@
+# Roadmap: asciidoctor-d → SoT for editors
+
+Goal: a native D AsciiDoc processor correct enough to power LSP semantic tokens,
+diagnostics, and HTML conversion — then plug into `antora-supplemental/zed-asciidoc`.
+
+## Why D (still)
+
+- Native speed for full-document reparse under debounce
+- One engine for convert + tokens (true source of truth)
+- MIT, owned under `dlang-supplemental`
+
+## Phased plan (compress “years” into milestones)
+
+### M0 — Skeleton (done)
+
+- Document / Section / Block AST stubs
+- Header + paragraph parse
+- HTML5 converter stub
+- CLI `asciidoctor-d`
+
+### M1 — Block structure (next)
+
+- Delimited blocks: listing, literal, sidebar, example, quote, passthrough, open, comment
+- Attribute lists on blocks (`[source,d]`, `[NOTE]`)
+- Admonition paragraph form (`NOTE:`)
+- Unordered / ordered lists (flat first; nest later)
+- Blank-line paragraph joining
+
+### M2 — Inline + macros
+
+- Constrained / unconstrained emphasis, mono, highlight
+- Links, images, includes (file include with base_dir)
+- Attribute references `{name}`
+- Callouts
+
+### M3 — Tables + preprocessor
+
+- `|===` tables
+- `ifdef` / `ifeval` / `include::` resolution
+- Document attribute header
+
+### M4 — Fidelity harness
+
+- Diff HTML against Asciidoctor on a corpus (AsciiDoc TCK + Antora samples)
+- Corpus gate in CI
+
+### M5 — Editor surface
+
+- Emit LSP semantic tokens from the same AST
+- Wire as backend for `zed-asciidoc` (replace Asciidoctor.js preview path)
+- Optional: keep Asciidoctor.js as fallback converter until M4 passes
+
+## Parallel track (Zed)
+
+Until M5: `zed-asciidoc` uses Asciidoctor.js for **browser** preview only.
+Highlighting stays tree-sitter until semantic tokens land.
+
+## Non-goals (for now)
+
+- PDF / EPUB backends
+- Full extension ecosystem parity with Ruby Asciidoctor
+- In-editor webview (blocked on Zed API)
