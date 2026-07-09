@@ -49,10 +49,18 @@ In Zed `settings.json` (there is no extension options GUI yet):
 
 Tag `vX.Y.Z` on `asciidoctor-d` → GitHub Actions uploads:
 
-- `asciidoctor-d-windows-x64.zip`
-- `asciidoctor-d-linux-x64.tar.gz`
-- `asciidoctor-d-macos-arm64.tar.gz` (`macos-latest`, Apple Silicon)
-- `asciidoctor-d-macos-x64.tar.gz` (`macos-15-intel`; last Intel Macs were sold ~2023)
+| Asset | Runner / notes |
+|---|---|
+| `asciidoctor-d-windows-x64.zip` | `windows-latest` |
+| `asciidoctor-d-windows-arm64.zip` | cross-compile from x64 via LDC multilib (`--arch=aarch64`) |
+| `asciidoctor-d-linux-x64.tar.gz` | `ubuntu-latest` |
+| `asciidoctor-d-linux-arm64.tar.gz` | `ubuntu-24.04-arm` |
+| `asciidoctor-d-macos-arm64.tar.gz` | `macos-latest` (Apple Silicon — default Mac in 2026) |
+| `asciidoctor-d-macos-x64.tar.gz` | `macos-15-intel` (legacy; last Intel Mac sold June 2023) |
+
+Not shipped yet:
+
+- **RISC-V** — real future target, but no stable GitHub-hosted runner story and not immediate demand. Revisit when `ubuntu-*-riscv64` (or similar) is GA.
 
 Zed extension (`zed-asciidoc`) downloads the matching asset when
 `engine` is `asciidoctor-d` and injects `asciidoctorDPath` into LSP settings.
@@ -60,12 +68,11 @@ Zed extension (`zed-asciidoc`) downloads the matching asset when
 ### Manual release smoke test
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
-# or: gh workflow run release.yml
+git tag v0.3.0
+git push origin v0.3.0
 ```
 
-Then confirm the Release page has the four archives.
+Then confirm the Release page has all six archives.
 
 ## Zed settings UI
 

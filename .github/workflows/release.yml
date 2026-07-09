@@ -15,6 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # --- x64 ---
           - os: windows-latest
             target: windows-x64
             exe: asciidoctor-d.exe
@@ -23,18 +24,37 @@ jobs:
             target: linux-x64
             exe: asciidoctor-d
             archive: tar.gz
+          # --- Apple Silicon (default Mac in 2026) ---
           - os: macos-latest
             target: macos-arm64
             exe: asciidoctor-d
             archive: tar.gz
+          # --- Intel Mac (legacy; last sold ~2023) ---
           - os: macos-15-intel
             target: macos-x64
             exe: asciidoctor-d
             archive: tar.gz
+          # --- Linux ARM64 (native runner) ---
+          - os: ubuntu-24.04-arm
+            target: linux-arm64
+            exe: asciidoctor-d
+            archive: tar.gz
+          # --- Windows ARM64 (cross-compile from x64 host; LDC multilib) ---
+          - os: windows-latest
+            target: windows-arm64
+            exe: asciidoctor-d.exe
+            archive: zip
+            cross_arch: aarch64
 
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: MSVC arm64 cross env (Windows ARM64)
+        if: runner.os == 'Windows' && matrix.cross_arch == 'aarch64'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: arm64
 
       - name: Install LDC (Windows)
         if: runner.os == 'Windows'
@@ -52,10 +72,28 @@ jobs:
       - name: Install LDC (Linux)
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ldc dub
-          ldc2 --version
-          dub --version
+          set -euo pipefail
+          if sudo apt-get update && sudo apt-get install -y ldc dub; then
+            ldc2 --version
+            dub --version
+          else
+            echo "apt LDC unavailable; installing official aarch64/x86_64 tarball"
+            ARCH=$(uname -m)
+            case "$ARCH" in
+              aarch64|arm64) ASSET_ARCH=aarch64 ;;
+              x86_64|amd64) ASSET_ARCH=x86_64 ;;
+              *) echo "Unsupported Linux arch: $ARCH"; exit 1 ;;
+            esac
+            VER=$(curl -fsSL https://api.github.com/repos/ldc-developers/ldc/releases/latest | jq -r .tag_name | sed 's/^v//')
+            URL="https://github.com/ldc-developers/ldc/releases/download/v${VER}/ldc2-${VER}-linux-${ASSET_ARCH}.tar.xz"
+            curl -fsSL "$URL" -o /tmp/ldc.tar.xz
+            sudo tar -xJf /tmp/ldc.tar.xz -C /opt
+            LDC_HOME=$(echo /opt/ldc2-*-linux-*)
+            echo "$LDC_HOME/bin" >> "$GITHUB_PATH"
+            export PATH="$LDC_HOME/bin:$PATH"
+            ldc2 --version
+            dub --version
+          fi
 
       - name: Install LDC (macOS)
         if: runner.os == 'macOS'
@@ -68,6 +106,8 @@ jobs:
 
       - name: Build CLI
         shell: bash
+        env:
+          CROSS_ARCH: ${{ matrix.cross_arch }}
         run: |
           set -euo pipefail
           if [[ "${{ runner.os }}" == "macOS" ]]; then
@@ -75,7 +115,16 @@ jobs:
           fi
           command -v dub
           command -v ldc2
-          dub build --config=application --build=release --compiler=ldc2
+
+          EXTRA_ARGS=()
+          if [[ "${CROSS_ARCH:-}" == "aarch64" ]]; then
+            # Windows ARM64 via LDC multilib + MSVC arm64 env (ilammy/msvc-dev-cmd)
+            EXTRA_ARGS+=(--arch=aarch64)
+            export DFLAGS="${DFLAGS:-} -mtriple=aarch64-windows-msvc"
+            echo "Cross-compiling for aarch64-windows-msvc"
+          fi
+
+          dub build --config=application --build=release --compiler=ldc2 "${EXTRA_ARGS[@]}"
           mkdir -p dist
           if [ -f asciidoctor-d.exe ]; then
             cp asciidoctor-d.exe "dist/${{ matrix.exe }}"
@@ -87,7 +136,12 @@ jobs:
             exit 1
           fi
           chmod +x "dist/${{ matrix.exe }}" || true
-          "dist/${{ matrix.exe }}" --help >/dev/null 2>&1 || "dist/${{ matrix.exe }}" -h >/dev/null 2>&1 || true
+          # Smoke only when not cross-compiling (can't run arm64 exe on x64 without emulation)
+          if [[ -z "${CROSS_ARCH:-}" ]]; then
+            "dist/${{ matrix.exe }}" --help >/dev/null 2>&1 || "dist/${{ matrix.exe }}" -h >/dev/null 2>&1 || true
+          else
+            file "dist/${{ matrix.exe }}" || true
+          fi
 
       - name: Package
         shell: bash
@@ -124,12 +178,20 @@ jobs:
           body: |
             Native AsciiDoc engine (`asciidoctor-d`) CLI builds.
 
-            ## What this is
-            - `asciidoctor-d` — convert `.adoc` → HTML (and later LSP helper)
-            - Not the Zed extension itself (that lives in `antora-supplemental/zed-asciidoc`)
+            ## Assets
+            | Archive | Platform |
+            |---|---|
+            | `windows-x64` | Windows x86_64 |
+            | `windows-arm64` | Windows ARM64 (Snapdragon / WoA) |
+            | `linux-x64` | Linux x86_64 |
+            | `linux-arm64` | Linux aarch64 |
+            | `macos-arm64` | Apple Silicon (default Mac) |
+            | `macos-x64` | Intel Mac (legacy) |
 
-            ## Install (manual)
-            Download the archive for your OS, put `asciidoctor-d` on your PATH.
+            RISC-V is not shipped yet (no stable GitHub-hosted runner / not immediate demand).
 
-            The Zed extension can also download this automatically when
+            ## Install
+            Download the archive for your OS/arch, put `asciidoctor-d` on your PATH.
+
+            The Zed extension downloads the matching asset when
             `engine` is set to `asciidoctor-d`.
