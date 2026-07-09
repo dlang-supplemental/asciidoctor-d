@@ -5,46 +5,57 @@ import std.string;
 import std.getopt;
 import asciidoctor;
 
-void main(string[] args)
+version (unittest)
 {
-    string backend = "html5";
-    string destination;
-    string inputFile;
-    bool help;
-
-    auto opts = getopt(
-        args,
-        "backend|b", "Output format (e.g. html5, pdf)", &backend,
-        "destination|D", "Output directory", &destination,
-        "help|h", "Show this help", &help
-    );
-
-    if (help || args.length < 2)
+    void main()
     {
-        defaultGetoptPrinter("Usage: asciidoctor-d [options] input_file", opts.options);
-        return;
+        // Unit tests run before main; nothing else required.
     }
-
-    inputFile = args[1];
-
-    if (!inputFile.exists)
+}
+else
+{
+    void main(string[] args)
     {
-        stderr.writeln("Error: Input file '" ~ inputFile ~ "' does not exist.");
-        return;
+        string backend = "html5";
+        string destination;
+        string outFile;
+        bool help;
+
+        auto opts = getopt(
+            args,
+            "backend|b", "Output format (html5)", &backend,
+            "destination-dir|D", "Output directory", &destination,
+            "out-file|o", "Output file path", &outFile,
+            "help|h", "Show this help", &help
+        );
+
+        if (help || args.length < 2)
+        {
+            defaultGetoptPrinter("Usage: asciidoctor-d [options] input_file", opts.options);
+            return;
+        }
+
+        auto inputFile = args[1];
+        if (!inputFile.exists)
+        {
+            stderr.writeln("Error: Input file '", inputFile, "' does not exist.");
+            return;
+        }
+
+        auto content = readText(inputFile);
+        auto baseDir = inputFile.absolutePath.dirName;
+        auto result = convert(content, backend, baseDir);
+
+        string outputFilename;
+        if (outFile.length)
+            outputFilename = outFile;
+        else
+        {
+            auto dir = destination.length ? destination : inputFile.dirName;
+            outputFilename = buildPath(dir, inputFile.baseName.setExtension(".html"));
+        }
+
+        std.file.write(outputFilename, result);
+        writeln("Converted ", inputFile, " to ", outputFilename);
     }
-
-    string content = readText(inputFile);
-    string result = convert(content, backend);
-
-    if (destination.empty)
-    {
-        destination = inputFile.dirName;
-    }
-    string outputFilename = buildPath(destination, inputFile.baseName.setExtension(".html"));
-    
-    // For now assuming html5 produces .html and others produce appropriately.
-    // The backend should dictate the extension ideally.
-
-    std.file.write(outputFilename, result);
-    writeln("Converted " ~ inputFile ~ " to " ~ outputFilename);
 }

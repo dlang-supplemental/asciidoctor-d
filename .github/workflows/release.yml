@@ -1,0 +1,124 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: windows-x64
+            exe: asciidoctor-d.exe
+            archive: zip
+          - os: ubuntu-latest
+            target: linux-x64
+            exe: asciidoctor-d
+            archive: tar.gz
+          - os: macos-latest
+            target: macos-arm64
+            exe: asciidoctor-d
+            archive: tar.gz
+          - os: macos-13
+            target: macos-x64
+            exe: asciidoctor-d
+            archive: tar.gz
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LDC (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install ldc -y
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+          ldc2 --version
+          dub --version
+
+      - name: Install LDC (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ldc dub
+          ldc2 --version
+          dub --version
+
+      - name: Install LDC (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install ldc
+          ldc2 --version
+          dub --version
+
+      - name: Build CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          dub build --config=application --build=release --compiler=ldc2
+          mkdir -p dist
+          if [ -f asciidoctor-d.exe ]; then
+            cp asciidoctor-d.exe "dist/${{ matrix.exe }}"
+          elif [ -f asciidoctor-d ]; then
+            cp asciidoctor-d "dist/${{ matrix.exe }}"
+          else
+            echo "Built binary not found" >&2
+            ls -la
+            exit 1
+          fi
+          chmod +x "dist/${{ matrix.exe }}" || true
+          "dist/${{ matrix.exe }}" --help >/dev/null 2>&1 || "dist/${{ matrix.exe }}" -h >/dev/null 2>&1 || true
+
+      - name: Package
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          if [ "${{ matrix.archive }}" = "zip" ]; then
+            7z a "../asciidoctor-d-${{ matrix.target }}.zip" "${{ matrix.exe }}"
+          else
+            tar -czf "../asciidoctor-d-${{ matrix.target }}.tar.gz" "${{ matrix.exe }}"
+          fi
+          ls -la ..
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: asciidoctor-d-${{ matrix.target }}
+          path: asciidoctor-d-${{ matrix.target }}.*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
+          body: |
+            Native AsciiDoc engine (`asciidoctor-d`) CLI builds.
+
+            ## What this is
+            - `asciidoctor-d` — convert `.adoc` → HTML (and later LSP helper)
+            - Not the Zed extension itself (that lives in `antora-supplemental/zed-asciidoc`)
+
+            ## Install (manual)
+            Download the archive for your OS, put `asciidoctor-d` on your PATH.
+
+            The Zed extension can also download this automatically when
+            `engine` is set to `asciidoctor-d`.

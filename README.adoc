@@ -2,32 +2,338 @@
 AMDphreak <https://github.com/AMDphreak>
 :toc:
 :icons: font
+:sectnums:
 
-Native D implementation of Asciidoctor.
+Native D implementation of Asciidoctor (AsciiDoc → AST → HTML5).
 
 Repository: https://github.com/dlang-supplemental/asciidoctor-d
 
+== Completion rate: *98%* (54 / 55; 54 done, 1 not started)
+
+Statuses: ✅ done · 🟡 partial · ❌ not started
+
+Keep this table current when features land. The percentage above is
+`(done + 0.5×partial) / total`, rounded.
+
+== Feature status
+
+=== Document structure
+
+|===
+| Feature | Status | Notes
+
+| Document title (`=`)
+| ✅
+| Header metadata supported
+
+| Author / revision lines
+| ✅
+| Author + `vX, date`
+
+| Document attribute entries (`:name:`)
+| ✅
+| Header and body
+
+| Sections (`==` … `======`)
+| ✅
+| Nested section tree
+
+| Discrete / body-level `=` headings
+| ✅
+| `[discrete]` flat headings; body `=` → level-1
+
+| Paragraphs (multi-line)
+| ✅
+|
+
+| Hard line breaks (` +`)
+| ✅
+|
+|===
+
+=== Delimited blocks
+
+|===
+| Feature | Status | Notes
+
+| Listing (`----`)
+| ✅
+|
+
+| Source (`[source,lang]`)
+| ✅
+| Language class on `<code>`
+
+| Literal (`....`)
+| ✅
+|
+
+| Sidebar (`****`)
+| ✅
+|
+
+| Example (`====`)
+| ✅
+|
+
+| Quote (`____`) + attribution
+| ✅
+| `[quote, attr, cite]`
+
+| Passthrough (`++++`)
+| ✅
+| Raw HTML
+
+| Open (`--`)
+| ✅
+|
+
+| Comment block (`////`)
+| ✅
+| Stripped from output
+
+| Block title (`.Title`)
+| ✅
+|
+
+| Attribute lists (`[style#id.role]`)
+| ✅
+| Positional + named
+|===
+
+=== Lists
+
+|===
+| Feature | Status | Notes
+
+| Unordered lists (`*`)
+| ✅
+|
+
+| Ordered lists (`.` / `1.`)
+| ✅
+|
+
+| Nested lists
+| ✅
+| Marker-depth nesting with nested `<ul>`/`<ol>`
+
+| Checklists (`* [ ]` / `* [x]`)
+| ✅
+|
+
+| Description lists (`Term::`)
+| ✅
+|
+
+| List continuation (`+`)
+| ✅
+|
+|===
+
+=== Tables
+
+|===
+| Feature | Status | Notes
+
+| Basic tables (`\|===`)
+| ✅
+|
+
+| Header row
+| ✅
+| First row / blank-line convention
+
+| `cols=` / `options=header`
+| ✅
+| `<colgroup>` width percentages from `cols=`
+
+| Cell styles (`a\|`, `s\|`, …)
+| ✅
+| `a|` re-parsed as AsciiDoc; e/s/l/m/h styled
+|===
+
+=== Admonitions
+
+|===
+| Feature | Status | Notes
+
+| Paragraph form (`NOTE:`)
+| ✅
+| NOTE TIP IMPORTANT WARNING CAUTION
+
+| Block form (`[NOTE]` + `====`)
+| ✅
+|
+|===
+
+=== Inline formatting
+
+|===
+| Feature | Status | Notes
+
+| Bold / italic / monospace
+| ✅
+| Constrained + unconstrained
+
+| Highlight / super / subscript
+| ✅
+|
+
+| Passthrough (`+++` / `$$`)
+| ✅
+|
+
+| Character replacements (`->`, `...`, `(C)`, …)
+| ✅
+|
+
+| Attribute references (`{name}`)
+| ✅
+|
+|===
+
+=== Macros & preprocessor
+
+|===
+| Feature | Status | Notes
+
+| URL / `link:` / `mailto:`
+| ✅
+|
+
+| Inline `image:`
+| ✅
+|
+
+| Block `image::`
+| ✅
+| Honors `{imagesdir}`
+
+| `kbd:` / `btn:` / `menu:`
+| ✅
+|
+
+| `include::`
+| ✅
+| File includes with `baseDir`
+
+| `ifdef` / `ifndef` / `endif`
+| ✅
+| Attribute presence only
+
+| `ifeval::`
+| ✅
+| String/number comparisons after `{attr}` substitution
+
+| Callouts
+| ✅
+| `<1>` in listings + `<1> text` colist
+
+| TOC generation (`:toc:`)
+| ✅
+| `:toc:`, `:toclevels:`, `:toc-title:`
+
+| Thematic break (`'''`)
+| ✅
+|
+
+| Page break (`<<<`)
+| ✅
+| CSS page-break div
+
+| Block anchors (`[[id]]`)
+| ✅
+| Applied to following block
+
+| Cross-references (`xref:` / `<<>>`)
+| ✅
+|
+
+| Footnotes (`footnote:[]`)
+| ✅
+| Numbered superscripts
+|===
+
+=== Converter / tooling
+
+|===
+| Feature | Status | Notes
+
+| HTML5 converter
+| ✅
+| Standalone document + basic CSS
+
+| CLI (`asciidoctor-d`)
+| ✅
+| `-b`, `-o`, `-D`
+
+| Unit tests
+| ✅
+| `dub test` / unittest config
+
+| Structural fidelity corpus
+| ✅
+| `pwsh scripts/run-corpus.ps1` + `.expect` files
+
+| PDF / manpage backends
+| ❌
+|
+
+| LSP semantic tokens export
+| ✅
+| `semanticTokens()` + `encodeLspData()` for editor SoT
+|===
+
 == Purpose
 
-This project aims to provide a fast, memory-safe, and correct implementation of AsciiDoc processing in the D programming language.
+Fast, memory-safe AsciiDoc processing in D for CLI conversion and (later) editor
+source-of-truth tooling (LSP tokens, diagnostics, preview).
 
 Primary goals:
-- Performance (native compilation via LDC/GDC)
-- Correctness (parsing and AST fidelity)
-- Better error messages than current Ruby implementation
-- Clean, maintainable codebase without "piping data to a defective core"
+
+* Performance (LDC/GDC)
+* Correctness vs Asciidoctor behavior
+* Clear errors and a maintainable codebase
 
 == Usage
 
 [source,bash]
 ----
-dub build
+dub build --config=application
 ./asciidoctor-d input.adoc
+./asciidoctor-d -o out.html input.adoc
 ----
 
-== Contributing
+Library API:
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+[source,d]
+----
+import asciidoctor;
+auto html = convert(source, "html5", baseDir);
+----
+
+== Development
+
+[source,bash]
+----
+dub build --config=application
+dub test
+pwsh scripts/run-corpus.ps1
+----
+
+Semantic tokens (for LSP):
+
+[source,d]
+----
+import asciidoctor;
+auto result = semanticTokens(source);
+auto lspData = encodeLspData(result.tokens);
+----
+
+Roadmap detail: link:ROADMAP.adoc[ROADMAP.adoc]
+
+Distribution (releases + Zed wiring): link:docs/DISTRIBUTION.adoc[docs/DISTRIBUTION.adoc]
 
 == License
 

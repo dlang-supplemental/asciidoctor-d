@@ -1,0 +1,10 @@
+# Structural expectations for basics.adoc (substring matches)
+id="toc"
+<strong>World</strong>
+admonitionblock
+class="conum"
+class="colist
+href="#section-one"
+class="footnote"
+<hr>
+class="discrete"

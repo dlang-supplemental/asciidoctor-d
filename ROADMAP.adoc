@@ -1,0 +1,52 @@
+= Roadmap: asciidoctor-d → SoT for editors
+:toc:
+
+Goal: a native D AsciiDoc processor correct enough to power LSP semantic tokens,
+diagnostics, and HTML conversion — then plug into
+`antora-supplemental/zed-asciidoc`.
+
+Feature-level status lives in link:README.adoc[README.adoc] (completion rate +
+tables). This file tracks milestones.
+
+== Milestones
+
+=== M0 — Skeleton ✅
+
+* Document / Section / Block AST
+* Header + paragraph parse
+* HTML5 converter + CLI
+
+=== M1 — Block structure ✅
+
+* Delimited blocks, attribute lists, admonitions
+* Lists (incl. checklist / dlist), tables (basic)
+* Includes + ifdef/ifndef
+
+=== M2 — Inline + macros ✅
+
+* Emphasis, links, images, UI macros, attribute refs
+* Replacements and passthroughs
+
+=== M3 — Tables + preprocessor ✅
+
+* Nested list HTML fidelity
+* `cols=` widths + `a|` cell reparse
+* Real `ifeval` expression evaluation
+* TOC, callouts, discrete headings
+
+=== M4 — Fidelity harness 🟡
+
+* ✅ Structural corpus harness (`scripts/run-corpus.ps1`)
+* 🟡 Optional Asciidoctor reference HTML when gem is installed
+* ❌ CI gate + full TCK byte-diff
+
+=== M5 — Editor surface 🟡
+
+* ✅ `semanticTokens()` / `encodeLspData()` library API
+* ❌ Wire as backend for `zed-asciidoc` LSP
+
+== Non-goals (for now)
+
+* PDF / EPUB backends
+* Full Ruby extension ecosystem parity
+* In-editor webview (blocked on Zed API)
