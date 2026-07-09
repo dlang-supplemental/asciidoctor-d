@@ -42,6 +42,10 @@ jobs:
         run: |
           choco install ldc -y
           $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+          $ldcDir = Split-Path (Get-Command ldc2).Source
+          $dubDir = Split-Path (Get-Command dub).Source
+          Add-Content -Path $env:GITHUB_PATH -Value $ldcDir
+          if ($dubDir -ne $ldcDir) { Add-Content -Path $env:GITHUB_PATH -Value $dubDir }
           ldc2 --version
           dub --version
 
@@ -56,7 +60,9 @@ jobs:
       - name: Install LDC (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install ldc
+          brew install ldc dub
+          echo "$(brew --prefix)/bin" >> "$GITHUB_PATH"
+          export PATH="$(brew --prefix)/bin:$PATH"
           ldc2 --version
           dub --version
 
@@ -64,6 +70,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            export PATH="$(brew --prefix)/bin:$PATH"
+          fi
+          command -v dub
+          command -v ldc2
           dub build --config=application --build=release --compiler=ldc2
           mkdir -p dist
           if [ -f asciidoctor-d.exe ]; then
