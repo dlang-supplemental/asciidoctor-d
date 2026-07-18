@@ -117,7 +117,14 @@ void resetInlineState()
     footnoteCounter = 0;
 }
 
+/// When true, inline passthrough (`+++`, `$$`) is HTML-escaped instead of emitted raw.
+void setSecureInlineMode(bool enabled)
+{
+    secureInlineMode = enabled;
+}
+
 private int footnoteCounter;
+private bool secureInlineMode;
 
 private string extractPassthrough(string work, ref Piece[] pieces)
 {
@@ -125,7 +132,10 @@ private string extractPassthrough(string work, ref Piece[] pieces)
     return replaceAll!((Captures!string c) {
         auto content = c[1].length ? c[1] : c[2];
         auto idx = pieces.length;
-        pieces ~= Piece(true, content);
+        if (secureInlineMode)
+            pieces ~= Piece(true, escapeHtml(content));
+        else
+            pieces ~= Piece(true, content);
         return "\x01" ~ to!string(idx) ~ "\x02";
     })(work, re);
 }

@@ -9,6 +9,21 @@ unittest
     auto html = convert("= Title\n\nHello *world*.\n");
     assert(html.canFind("<h1>"), html);
     assert(html.canFind("<strong>world</strong>"), html);
+    assert(html.canFind("<!DOCTYPE html>"), html);
+}
+
+unittest
+{
+    ConvertOptions opts;
+    opts.standalone = false;
+    opts.secure = true;
+    auto html = convert("= Title\n\nHello *world*.\n\n++++\n<script>alert(1)</script>\n++++\n", opts);
+    assert(!html.canFind("<!DOCTYPE"), html);
+    assert(!html.canFind("<html"), html);
+    assert(html.canFind("<h1>"), html);
+    assert(html.canFind("<strong>world</strong>"), html);
+    assert(!html.canFind("<script>"), html);
+    assert(html.canFind("&lt;script&gt;"), html);
 }
 
 unittest
