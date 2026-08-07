@@ -3,19 +3,12 @@ ifndef::env-github[:icons: font]
 :toclevels: 2
 :sectanchors:
 
-ifndef::env-github[]
+[[readme-top]]
 image:https://img.shields.io/github/contributors/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge[Contributors,link=https://github.com/dlang-supplemental/asciidoctor-d/graphs/contributors]
 image:https://img.shields.io/github/forks/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge[Forks,link=https://github.com/dlang-supplemental/asciidoctor-d/network/members]
 image:https://img.shields.io/github/stars/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge[Stars,link=https://github.com/dlang-supplemental/asciidoctor-d/stargazers]
 image:https://img.shields.io/github/issues/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge[Issues,link=https://github.com/dlang-supplemental/asciidoctor-d/issues]
-endif::[]
 
-ifdef::env-github[]
-image:https://img.shields.io/github/contributors/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge[Contributors]
-image:https://img.shields.io/github/forks/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge[Forks]
-image:https://img.shields.io/github/stars/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge[Stars]
-image:https://img.shields.io/github/issues/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge[Issues]
-endif::[]
 = Asciidoctor-D
 
 Native D implementation of Asciidoctor (AsciiDoc â†’ AST â†’ HTML5).
@@ -331,6 +324,8 @@ auto man = convert(source, "manpage", baseDir);
 auto pdf = convert(source, "pdf", baseDir);
 ----
 
+link:#readme-top[back to top]
+
 == Development
 
 [source,bash]
@@ -356,9 +351,14 @@ Distribution (releases + Zed wiring): link:docs/DISTRIBUTION.adoc[docs/DISTRIBUT
 == License
 
 MIT
+
+link:#readme-top[back to top]
+
 == Contact
 
 DLang Supplemental — dlang@devcentr.org
 
 * Project: https://github.com/dlang-supplemental/asciidoctor-d
 * Site: https://dlang-supplemental.github.io
+
+link:#readme-top[back to top]
