@@ -3,7 +3,27 @@ ifndef::env-github[:icons: font]
 :toclevels: 2
 :sectanchors:
 
-[[readme-top]]
+ifdef::env-github[]
+++++
+<a id="readme-top"></a>
+<div align="center">
+<a href="https://github.com/dlang-supplemental/asciidoctor-d/graphs/contributors"><img src="https://img.shields.io/github/contributors/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge" alt="Contributors"></a>
+<a href="https://github.com/dlang-supplemental/asciidoctor-d/network/members"><img src="https://img.shields.io/github/forks/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge" alt="Forks"></a>
+<a href="https://github.com/dlang-supplemental/asciidoctor-d/stargazers"><img src="https://img.shields.io/github/stars/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge" alt="Stars"></a>
+<a href="https://github.com/dlang-supplemental/asciidoctor-d/issues"><img src="https://img.shields.io/github/issues/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge" alt="Issues"></a>
+<br />
+<h3 align="center">Asciidoctor-D</h3>
+<p align="center">
+Native D implementation of Asciidoctor (AsciiDoc → AST → HTML5).<br />
+<a href="https://github.com/dlang-supplemental/asciidoctor-d/issues">Report Bug</a>
+&middot;
+<a href="https://github.com/dlang-supplemental/asciidoctor-d/issues">Request Feature</a>
+</p>
+</div>
+++++
+endif::[]
+
+ifndef::env-github[]
 image:https://img.shields.io/github/contributors/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge[Contributors,link=https://github.com/dlang-supplemental/asciidoctor-d/graphs/contributors]
 image:https://img.shields.io/github/forks/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge[Forks,link=https://github.com/dlang-supplemental/asciidoctor-d/network/members]
 image:https://img.shields.io/github/stars/dlang-supplemental/asciidoctor-d.svg?style=for-the-badge[Stars,link=https://github.com/dlang-supplemental/asciidoctor-d/stargazers]
@@ -11,9 +31,10 @@ image:https://img.shields.io/github/issues/dlang-supplemental/asciidoctor-d.svg?
 
 = Asciidoctor-D
 
-Native D implementation of Asciidoctor (AsciiDoc â†’ AST â†’ HTML5).
+Native D implementation of Asciidoctor (AsciiDoc → AST → HTML5).
 
 Repository: https://github.com/dlang-supplemental/asciidoctor-d
+endif::[]
 
 == Completion rate: *100%* (55 / 55; 55 done, 0 not started)
 
