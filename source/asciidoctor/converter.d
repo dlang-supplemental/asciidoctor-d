@@ -14,16 +14,29 @@ interface Converter
     string convert(Document node);
 }
 
+/// Options for HTML5 (and future) conversion.
+struct ConvertOptions
+{
+    /// Output backend name (`html5`, `manpage`, `pdf`).
+    string backend = "html5";
+    /// Directory used to resolve `include::` paths.
+    string baseDir = ".";
+    /// When false, emit an embeddable fragment (no document chrome / CSS).
+    bool standalone = true;
+    /// When true, escape raw HTML passthrough (`++++`, `+++`) instead of emitting it.
+    bool secure = false;
+}
+
 class ConverterFactory
 {
-    static Converter create(string backend)
+    static Converter create(string backend, ConvertOptions options = ConvertOptions.init)
     {
         import std.uni : toLower;
 
         switch (backend.toLower)
         {
         case "html5":
-            return new Html5Converter();
+            return new Html5Converter(options.standalone, options.secure);
         case "manpage":
             import asciidoctor.manpage : ManpageConverter;
             return new ManpageConverter();
@@ -40,27 +53,43 @@ class Html5Converter : Converter
 {
     private string[string] attrs;
     private Section[] tocSections;
+    private bool standalone;
+    private bool secure;
+
+    this(bool standalone = true, bool secure = false)
+    {
+        this.standalone = standalone;
+        this.secure = secure;
+    }
 
     override string convert(Document node)
     {
         resetInlineState();
+        setSecureInlineMode(secure);
+        scope (exit)
+            setSecureInlineMode(false);
+
         attrs = node.docAttributes;
         tocSections = assignSectionIds(node);
         auto app = appender!string;
 
-        app.put("<!DOCTYPE html>\n");
-        app.put("<html lang=\"en\">\n");
-        app.put("<head>\n");
-        app.put("<meta charset=\"UTF-8\">\n");
-        app.put(
-            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-        if (!node.doctitle.empty)
-            app.put("<title>" ~ escapeHtml(node.doctitle) ~ "</title>\n");
-        app.put("<style>\n");
-        app.put(defaultCss());
-        app.put("</style>\n");
-        app.put("</head>\n");
-        app.put("<body class=\"article\">\n");
+        if (standalone)
+        {
+            app.put("<!DOCTYPE html>\n");
+            app.put("<html lang=\"en\">\n");
+            app.put("<head>\n");
+            app.put("<meta charset=\"UTF-8\">\n");
+            app.put(
+                "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
+            if (!node.doctitle.empty)
+                app.put("<title>" ~ escapeHtml(node.doctitle) ~ "</title>\n");
+            app.put("<style>\n");
+            app.put(defaultCss());
+            app.put("</style>\n");
+            app.put("</head>\n");
+            app.put("<body class=\"article\">\n");
+        }
+
         app.put("<div id=\"header\">\n");
         if (!node.doctitle.empty)
             app.put("<h1>" ~ renderInline(node.doctitle, attrs) ~ "</h1>\n");
@@ -76,8 +105,12 @@ class Html5Converter : Converter
             app.put(convertNode(block));
 
         app.put("</div>\n");
-        app.put("</body>\n");
-        app.put("</html>\n");
+
+        if (standalone)
+        {
+            app.put("</body>\n");
+            app.put("</html>\n");
+        }
         return app.data;
     }
 
@@ -167,7 +200,7 @@ class Html5Converter : Converter
         case "literal":
             return convertListing(block);
         case "pass":
-            return block.content;
+            return secure ? escapeHtml(block.content) : block.content;
         case "admonition":
             return convertAdmonition(block);
         case "quote":
