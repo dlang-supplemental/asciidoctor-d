@@ -16,6 +16,29 @@ unittest
 {
     ConvertOptions opts;
     opts.standalone = false;
+    auto html = convert("= Title\n\nHello *world*.\n", opts);
+    assert(!html.canFind("<!DOCTYPE"), html);
+    assert(!html.canFind("<html"), html);
+    assert(!html.canFind("<body"), html);
+    assert(!html.canFind("<style>"), html);
+    assert(html.canFind("<h1>"), html);
+    assert(html.canFind("<strong>world</strong>"), html);
+}
+
+unittest
+{
+    ConvertOptions opts;
+    opts.secure = true;
+    auto html = convert("= Title\n\nInline +++<em>raw</em>+++ passthrough.\n", opts);
+    assert(html.canFind("<!DOCTYPE html>"), html);
+    assert(!html.canFind("<em>raw</em>"), html);
+    assert(html.canFind("&lt;em&gt;raw&lt;/em&gt;"), html);
+}
+
+unittest
+{
+    ConvertOptions opts;
+    opts.standalone = false;
     opts.secure = true;
     auto html = convert("= Title\n\nHello *world*.\n\n++++\n<script>alert(1)</script>\n++++\n", opts);
     assert(!html.canFind("<!DOCTYPE"), html);
