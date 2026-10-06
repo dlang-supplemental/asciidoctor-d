@@ -48,7 +48,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: MSVC arm64 cross env (Windows ARM64)
         if: runner.os == 'Windows' && matrix.cross_arch == 'aarch64'
@@ -155,7 +155,7 @@ jobs:
           fi
           ls -la ..
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: asciidoctor-d-${{ matrix.target }}
           path: asciidoctor-d-${{ matrix.target }}.*
@@ -165,13 +165,13 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
           merge-multiple: true
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: artifacts/*
           generate_release_notes: true
