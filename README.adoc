@@ -38,10 +38,10 @@ endif::[]
 
 == Completion rate: *100%* (55 / 55; 55 done, 0 not started)
 
-Statuses: âœ… done Â· ðŸŸ¡ partial Â· âŒ not started
+Statuses: ✅ done · 🟡 partial · ❌ not started
 
 Keep this table current when features land. The percentage above is
-`(done + 0.5Ã—partial) / total`, rounded.
+`(done + 0.5×partial) / total`, rounded.
 
 == Feature status
 
@@ -51,31 +51,31 @@ Keep this table current when features land. The percentage above is
 | Feature | Status | Notes
 
 | Document title (`=`)
-| âœ…
+| ✅
 | Header metadata supported
 
 | Author / revision lines
-| âœ…
+| ✅
 | Author + `vX, date`
 
 | Document attribute entries (`:name:`)
-| âœ…
+| ✅
 | Header and body
 
-| Sections (`==` â€¦ `======`)
-| âœ…
+| Sections (`==` … `======`)
+| ✅
 | Nested section tree
 
 | Discrete / body-level `=` headings
-| âœ…
-| `[discrete]` flat headings; body `=` â†’ level-1
+| ✅
+| `[discrete]` flat headings; body `=` → level-1
 
 | Paragraphs (multi-line)
-| âœ…
+| ✅
 |
 
 | Hard line breaks (` +`)
-| âœ…
+| ✅
 |
 |===
 
@@ -85,47 +85,47 @@ Keep this table current when features land. The percentage above is
 | Feature | Status | Notes
 
 | Listing (`----`)
-| âœ…
+| ✅
 |
 
 | Source (`[source,lang]`)
-| âœ…
+| ✅
 | Language class on `<code>`
 
 | Literal (`....`)
-| âœ…
+| ✅
 |
 
 | Sidebar (`****`)
-| âœ…
+| ✅
 |
 
 | Example (`====`)
-| âœ…
+| ✅
 |
 
 | Quote (`____`) + attribution
-| âœ…
+| ✅
 | `[quote, attr, cite]`
 
 | Passthrough (`++++`)
-| âœ…
+| ✅
 | Raw HTML
 
 | Open (`--`)
-| âœ…
+| ✅
 |
 
 | Comment block (`////`)
-| âœ…
+| ✅
 | Stripped from output
 
 | Block title (`.Title`)
-| âœ…
+| ✅
 |
 
 | Attribute lists (`[style#id.role]`)
-| âœ…
+| ✅
 | Positional + named
 |===
 
@@ -135,27 +135,27 @@ Keep this table current when features land. The percentage above is
 | Feature | Status | Notes
 
 | Unordered lists (`*`)
-| âœ…
+| ✅
 |
 
 | Ordered lists (`.` / `1.`)
-| âœ…
+| ✅
 |
 
 | Nested lists
-| âœ…
+| ✅
 | Marker-depth nesting with nested `<ul>`/`<ol>`
 
 | Checklists (`* [ ]` / `* [x]`)
-| âœ…
+| ✅
 |
 
 | Description lists (`Term::`)
-| âœ…
+| ✅
 |
 
 | List continuation (`+`)
-| âœ…
+| ✅
 |
 |===
 
@@ -165,19 +165,19 @@ Keep this table current when features land. The percentage above is
 | Feature | Status | Notes
 
 | Basic tables (`\|===`)
-| âœ…
+| ✅
 |
 
 | Header row
-| âœ…
+| ✅
 | First row / blank-line convention
 
 | `cols=` / `options=header`
-| âœ…
+| ✅
 | `<colgroup>` width percentages from `cols=`
 
-| Cell styles (`a\|`, `s\|`, â€¦)
-| âœ…
+| Cell styles (`a\|`, `s\|`, …)
+| ✅
 | `a|` re-parsed as AsciiDoc; e/s/l/m/h styled
 |===
 
@@ -187,11 +187,11 @@ Keep this table current when features land. The percentage above is
 | Feature | Status | Notes
 
 | Paragraph form (`NOTE:`)
-| âœ…
+| ✅
 | NOTE TIP IMPORTANT WARNING CAUTION
 
 | Block form (`[NOTE]` + `====`)
-| âœ…
+| ✅
 |
 |===
 
@@ -201,23 +201,23 @@ Keep this table current when features land. The percentage above is
 | Feature | Status | Notes
 
 | Bold / italic / monospace
-| âœ…
+| ✅
 | Constrained + unconstrained
 
 | Highlight / super / subscript
-| âœ…
+| ✅
 |
 
 | Passthrough (`+++` / `$$`)
-| âœ…
+| ✅
 |
 
-| Character replacements (`->`, `...`, `(C)`, â€¦)
-| âœ…
+| Character replacements (`->`, `...`, `(C)`, …)
+| ✅
 |
 
 | Attribute references (`{name}`)
-| âœ…
+| ✅
 |
 |===
 
@@ -227,59 +227,59 @@ Keep this table current when features land. The percentage above is
 | Feature | Status | Notes
 
 | URL / `link:` / `mailto:`
-| âœ…
+| ✅
 |
 
 | Inline `image:`
-| âœ…
+| ✅
 |
 
 | Block `image::`
-| âœ…
+| ✅
 | Honors `{imagesdir}`
 
 | `kbd:` / `btn:` / `menu:`
-| âœ…
+| ✅
 |
 
 | `include::`
-| âœ…
+| ✅
 | File includes with `baseDir`
 
 | `ifdef` / `ifndef` / `endif`
-| âœ…
+| ✅
 | Attribute presence only
 
 | `ifeval::`
-| âœ…
+| ✅
 | String/number comparisons after `{attr}` substitution
 
 | Callouts
-| âœ…
+| ✅
 | `<1>` in listings + `<1> text` colist
 
 | TOC generation (`:toc:`)
-| âœ…
+| ✅
 | `:toc:`, `:toclevels:`, `:toc-title:`
 
 | Thematic break (`'''`)
-| âœ…
+| ✅
 |
 
 | Page break (`<<<`)
-| âœ…
+| ✅
 | CSS page-break div
 
 | Block anchors (`[[id]]`)
-| âœ…
+| ✅
 | Applied to following block
 
 | Cross-references (`xref:` / `<<>>`)
-| âœ…
+| ✅
 |
 
 | Footnotes (`footnote:[]`)
-| âœ…
+| ✅
 | Numbered superscripts
 |===
 
@@ -289,27 +289,27 @@ Keep this table current when features land. The percentage above is
 | Feature | Status | Notes
 
 | HTML5 converter
-| âœ…
+| ✅
 | Standalone document + basic CSS
 
 | CLI (`asciidoctor-d`)
-| âœ…
+| ✅
 | `-b`, `-o`, `-D`
 
 | Unit tests
-| âœ…
+| ✅
 | `dub test` / unittest config
 
 | Structural fidelity corpus
-| âœ…
+| ✅
 | `pwsh scripts/run-corpus.ps1` + `.expect` files
 
 | PDF / manpage backends
-| âœ…
-| `-b manpage` (groff) Â· `-b pdf` (native PDF 1.4 text layout)
+| ✅
+| `-b manpage` (groff) · `-b pdf` (native PDF 1.4 text layout)
 
 | LSP semantic tokens export
-| âœ…
+| ✅
 | `semanticTokens()` + `encodeLspData()` for editor SoT
 |===
 
