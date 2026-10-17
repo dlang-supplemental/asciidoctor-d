@@ -1,0 +1,40 @@
+name: Notify docs hub (link invalidation)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  changed-sources:
+    runs-on: ubuntu-latest
+    outputs:
+      sources: ${{ steps.diff.outputs.sources }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - name: Collect changed paths under docs/
+        id: diff
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "sources=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          list=$(git diff --name-only HEAD~1 HEAD -- 'docs/**' | paste -sd, - || true)
+          echo "sources=${list}" >> "$GITHUB_OUTPUT"
+
+  notify:
+    needs: changed-sources
+    uses: dlang-supplemental/.github/.github/workflows/docs-hub-link-cache-invalidate-dispatch.yml@main
+    secrets:
+      DOCS_HUB_DISPATCH_TOKEN: ${{ secrets.DOCS_HUB_DISPATCH_TOKEN }}
+    with:
+      sources: ${{ needs.changed-sources.outputs.sources }}
+      hub_repo: dlang-supplemental/docs
