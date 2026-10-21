@@ -1,0 +1,206 @@
+= Hot reload IPC (protocol v1)
+:page-orig-author: Composer on behalf of AMDphreak
+:page-last-author: Composer on behalf of AMDphreak
+
+Consumer: https://github.com/antora-supplemental/antora-solidstart[antora-solidstart^] dev compiler (Node orchestrator).
+Engine: `asciidoctor-d` long-lived process — not embedded in Vinxi/Vite.
+
+== Goals
+
+* Full-document convert today (fragment HTML via `standalone: false`).
+* Reserved fields for subsection / block-range reconvert (AST source maps not wired yet).
+* Same JSON shape on stdio NDJSON and HTTP POST.
+
+== Spawn
+
+[source,shell]
+----
+asciidoctor-d serve
+# or
+asciidoctor-d serve --http 127.0.0.1:8765
+----
+
+Stdio mode: one JSON object per line on stdin; one response line per request on stdout.
+Log/diagnostics may use stderr.
+
+Optional poll-based watch (local experiments; production watchers should prefer `serve`):
+
+[source,shell]
+----
+asciidoctor-d watch --interval 500 path/to/page.adoc
+----
+
+Emits NDJSON events: `{"version":1,"event":"converted","path":"...","response":{...}}`.
+
+== Request envelope
+
+|===
+| Field | Type | Required | Notes
+
+| `version`
+| number
+| yes
+| Must be `1`
+
+| `id`
+| string or number
+| no
+| Correlates responses (echoed when present)
+
+| `op`
+| string
+| yes
+| `ping`, `convert`, or `shutdown`
+|===
+
+=== `op: ping`
+
+No `params`. Response includes `engine: "asciidoctor-d"`.
+
+=== `op: convert`
+
+`params` object:
+
+|===
+| Field | Type | Default | Notes
+
+| `path`
+| string
+| —
+| Absolute or relative path; reads file from disk
+
+| `source`
+| string
+| —
+| Inline AsciiDoc (use instead of `path`)
+
+| `baseDir`
+| string
+| parent of `path` or `"."`
+| `include::` resolution
+
+| `backend`
+| string
+| `html5`
+| Same as CLI `--backend`
+
+| `standalone`
+| boolean
+| `false`
+| `false` → embeddable fragment for hot DOM swap
+
+| `secure`
+| boolean
+| `true`
+| Escape raw HTML passthrough (`+++`, `++++`)
+
+| `fromLine` / `toLine`
+| number
+| —
+| *Reserved* — full doc returned; `partial.implemented: false`
+
+| `blockId`
+| string
+| —
+| *Reserved* — section/block anchor id for future partial convert
+|===
+
+Provide either `path` or `source`, not both.
+
+=== `op: shutdown`
+
+Graceful exit after the response (`shutdown: true`). Stdio loop exits with code 0.
+
+== Response envelope
+
+Success:
+
+[source,json]
+----
+{
+  "version": 1,
+  "id": "req-1",
+  "ok": true,
+  "html": "<div id=\"header\">...",
+  "path": "/abs/page.adoc",
+  "mtime": 1730000000,
+  "partial": {
+    "requested": true,
+    "implemented": false,
+    "message": "Full-document convert only; block/line range is reserved for a future release.",
+    "fromLine": 10,
+    "toLine": 40
+  }
+}
+----
+
+`partial` appears only when range/block fields were sent.
+
+Error:
+
+[source,json]
+----
+{
+  "version": 1,
+  "id": "req-1",
+  "ok": false,
+  "error": { "code": "not_found", "message": "..." }
+}
+----
+
+Common `error.code` values: `parse_error`, `invalid_request`, `not_found`, `convert_failed`, `unknown_op`, `unsupported_version`.
+
+== HTTP mapping
+
+|===
+| Method | Path | Body
+
+| GET
+| `/v1/health`
+| — returns `{ok, version, engine}`
+
+| POST
+| `/v1/convert`
+| Same JSON object as one stdio request line
+|===
+
+Bind localhost only unless you explicitly expose the daemon.
+
+== Node orchestrator sketch
+
+[source,javascript]
+----
+import { spawn } from 'node:child_process';
+import readline from 'node:readline';
+
+const child = spawn('asciidoctor-d', ['serve'], { stdio: ['pipe', 'pipe', 'inherit'] });
+const rl = readline.createInterface({ input: child.stdout });
+
+function convertFile(path) {
+  const id = `c-${Date.now()}`;
+  const req = JSON.stringify({
+    version: 1,
+    id,
+    op: 'convert',
+    params: { path, standalone: false, secure: true },
+  });
+  return new Promise((resolve, reject) => {
+    const onLine = (line) => {
+      const res = JSON.parse(line);
+      if (res.id !== id) return;
+      rl.off('line', onLine);
+      res.ok ? resolve(res.html) : reject(new Error(res.error.message));
+    };
+    rl.on('line', onLine);
+    child.stdin.write(req + '\n');
+  });
+}
+----
+
+After filesystem watch debounce, call `convertFile` and patch the article shell inner HTML (antora-solidstart `DocLayout` body slot).
+
+== Future (not in v1)
+
+* AST-backed `fromLine` / `toLine` / `blockId` partial HTML without full parse waste.
+* Include graph cache across requests in the daemon.
+* Optional `semanticTokens` op for LSP-aligned dirty ranges.

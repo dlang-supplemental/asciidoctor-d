@@ -367,7 +367,11 @@ auto lspData = encodeLspData(result.tokens);
 
 Roadmap detail: link:ROADMAP.adoc[ROADMAP.adoc]
 
+Hot reload / antora-solidstart IPC: link:docs/HOT-RELOAD.adoc[docs/HOT-RELOAD.adoc]
+
 Distribution (releases + Zed wiring): link:docs/DISTRIBUTION.adoc[docs/DISTRIBUTION.adoc]
+
+Changelog: link:changelog.adoc[changelog.adoc]
 
 == License
 

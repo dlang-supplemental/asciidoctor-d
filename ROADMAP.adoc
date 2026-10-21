@@ -50,6 +50,15 @@ tables). This file tracks milestones.
 * ✅ `manpage` (groff) backend
 * ✅ Native `pdf` backend (minimal PDF 1.4 text layout)
 
+=== M7 — Hot reload IPC 🟡
+
+* ✅ Protocol v1 documented (`docs/HOT-RELOAD.adoc`)
+* ✅ `asciidoctor-d serve` (stdio NDJSON + optional `--http HOST:PORT`)
+* ✅ `asciidoctor-d watch` poll helper for local dev
+* ✅ Fragment HTML via IPC (`standalone: false`, `secure: true` default)
+* ❌ Partial reconvert by line range or `blockId` (hook fields only)
+* ❌ antora-solidstart orchestrator wired to daemon
+
 == Non-goals (for now)
 
 * EPUB / full print-CSS PDF engines (Prince, weasyprint parity)

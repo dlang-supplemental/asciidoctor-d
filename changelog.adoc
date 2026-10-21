@@ -1,0 +1,13 @@
+= Changelog
+:toc:
+:toclevels: 3
+
+== 2026-10-20
+
+Hot reload IPC groundwork.
+
+=== Serve daemon and protocol v1
+* `asciidoctor-d serve` — NDJSON stdin/stdout; optional `--http HOST:PORT` (`GET /v1/health`, `POST /v1/convert`).
+* `asciidoctor-d watch` — poll-based full reconvert events for local experiments.
+* link:docs/HOT-RELOAD.adoc[docs/HOT-RELOAD.adoc] — contract for antora-solidstart Node orchestrator; reserved `fromLine` / `toLine` / `blockId` fields.
+* link:ROADMAP.adoc#_m7_hot_reload_ipc[M7 milestone] on roadmap.
