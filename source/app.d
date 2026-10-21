@@ -40,7 +40,7 @@ int runConvert(string[] args)
     bool help;
 
     auto opts = getopt(
-        args[1 .. $],
+        args,
         "backend|b", "Output format (html5, manpage, pdf)", &backend,
         "destination-dir|D", "Output directory", &destination,
         "out-file|o", "Output file path", &outFile,
@@ -94,7 +94,7 @@ int runServe(string[] args)
     bool help;
 
     auto opts = getopt(
-        args[1 .. $],
+        args,
         "http", "Listen for HTTP POST /v1/convert (HOST:PORT); default stdio NDJSON", &httpBind,
         "help|h", "Show help", &help
     );
@@ -131,7 +131,7 @@ int runWatchCmd(string[] args)
 
     string[] files;
     auto opts = getopt(
-        args[1 .. $],
+        args,
         "interval|i", "Poll interval in milliseconds", &intervalMs,
         "standalone", "Emit full HTML documents (default: fragment)", &standalone,
         "insecure", "Allow raw HTML passthrough in output", &insecure,
@@ -144,7 +144,7 @@ int runWatchCmd(string[] args)
         return 0;
     }
 
-    files = opts.args[1 .. $];
+    files = args[2 .. $];
     if (!files.length)
     {
         stderr.writeln("watch: provide at least one .adoc path");

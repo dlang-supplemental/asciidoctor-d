@@ -6,6 +6,9 @@
 
 Hot reload IPC groundwork.
 
+=== Fixes
+* CLI: pass `args` to `getopt` by reference so `serve`, `watch`, and `convert` build and parse options (the application configuration failed to compile).
+
 === Serve daemon and protocol v1
 * `asciidoctor-d serve` — NDJSON stdin/stdout; optional `--http HOST:PORT` (`GET /v1/health`, `POST /v1/convert`).
 * `asciidoctor-d watch` — poll-based full reconvert events for local experiments.
