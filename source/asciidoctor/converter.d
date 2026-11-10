@@ -25,6 +25,10 @@ struct ConvertOptions
     bool standalone = true;
     /// When true, escape raw HTML passthrough (`++++`, `+++`) instead of emitting it.
     bool secure = false;
+    /// Called with `(url, isImage)` before a user-supplied `href` or `src` is written.
+    /// The returned URL still has to pass the scheme allowlist (`http`, `https`,
+    /// `mailto`, a fragment, or a relative path).
+    string delegate(string url, bool isImage) urlFilter;
 }
 
 class ConverterFactory
@@ -36,7 +40,7 @@ class ConverterFactory
         switch (backend.toLower)
         {
         case "html5":
-            return new Html5Converter(options.standalone, options.secure);
+            return new Html5Converter(options.standalone, options.secure, options.urlFilter);
         case "manpage":
             import asciidoctor.manpage : ManpageConverter;
             return new ManpageConverter();
@@ -55,11 +59,29 @@ class Html5Converter : Converter
     private Section[] tocSections;
     private bool standalone;
     private bool secure;
+    private string delegate(string, bool) urlFilter;
 
-    this(bool standalone = true, bool secure = false)
+    this(bool standalone = true, bool secure = false,
+        string delegate(string, bool) urlFilter = null)
     {
         this.standalone = standalone;
         this.secure = secure;
+        this.urlFilter = urlFilter;
+    }
+
+    /// Inline markup for this document, including the URL rewrite callback.
+    private string inl(string text)
+    {
+        return renderInline(text, attrs, true, urlFilter);
+    }
+
+    /// HTML-escaped URL for `href` or `src`. Empty when the allowlist rejects it.
+    private string acceptedHref(string url, bool isImage)
+    {
+        string accepted;
+        if (!tryAcceptUrl(url, isImage, urlFilter, accepted))
+            return null;
+        return escapeHtml(accepted);
     }
 
     override string convert(Document node)
@@ -92,7 +114,7 @@ class Html5Converter : Converter
 
         app.put("<div id=\"header\">\n");
         if (!node.doctitle.empty)
-            app.put("<h1>" ~ renderInline(node.doctitle, attrs) ~ "</h1>\n");
+            app.put("<h1>" ~ inl(node.doctitle) ~ "</h1>\n");
         if (!node.authors.empty)
             app.put("<div class=\"details\"><span id=\"author\" class=\"author\">"
                 ~ escapeHtml(node.authors) ~ "</span></div>\n");
@@ -161,8 +183,11 @@ class Html5Converter : Converter
                 app.put(`<ul class="sectlevel` ~ to!string(level) ~ `">`);
                 opened = true;
             }
-            app.put(`<li><a href="#` ~ escapeHtml(sec.id) ~ `">`
-                ~ renderInline(sec.title, attrs) ~ `</a>`);
+            auto tocHref = acceptedHref("#" ~ sec.id, false);
+            if (tocHref.length)
+                app.put(`<li><a href="` ~ tocHref ~ `">` ~ inl(sec.title) ~ `</a>`);
+            else
+                app.put(`<li>` ~ inl(sec.title));
             // children
             size_t j = i + 1;
             while (j < end && secs[j].level > level)
@@ -234,7 +259,7 @@ class Html5Converter : Converter
     private string convertParagraph(Block block)
     {
         auto joined = joinParagraphLines(block.lines);
-        auto body = renderInline(joined, attrs);
+        auto body = inl(joined);
         auto cls = block.style == "lead" ? "paragraph lead" : "paragraph";
         return `<div class="` ~ cls ~ `"><p>` ~ body ~ `</p></div>` ~ "\n";
     }
@@ -251,7 +276,7 @@ class Html5Converter : Converter
         auto isSource = block.style == "source" || lang.length > 0
             || block.context == "listing";
         if (block.title.length)
-            app.put(`<div class="title">` ~ renderInline(block.title, attrs) ~ `</div>` ~ "\n");
+            app.put(`<div class="title">` ~ inl(block.title) ~ `</div>` ~ "\n");
 
         auto outer = block.context == "literal" ? "literalblock" : "listingblock";
         app.put(`<div class="` ~ outer ~ `">`);
@@ -283,7 +308,7 @@ class Html5Converter : Converter
         foreach (c; block.blocks)
         {
             if (auto item = cast(ListItem) c)
-                app.put(`<li><p>` ~ renderInline(item.text, attrs) ~ `</p></li>`);
+                app.put(`<li><p>` ~ inl(item.text) ~ `</p></li>`);
         }
         app.put(`</ol></div>` ~ "\n");
         return app.data;
@@ -298,7 +323,7 @@ class Html5Converter : Converter
         app.put(`<td class="icon"><div class="title">` ~ escapeHtml(name) ~ `</div></td>`);
         app.put(`<td class="content">`);
         if (block.title.length)
-            app.put(`<div class="title">` ~ renderInline(block.title, attrs) ~ `</div>`);
+            app.put(`<div class="title">` ~ inl(block.title) ~ `</div>`);
         if (block.blocks.length)
         {
             foreach (c; block.blocks)
@@ -307,7 +332,7 @@ class Html5Converter : Converter
         else
         {
             auto joined = joinParagraphLines(block.lines);
-            app.put(renderInline(joined, attrs));
+            app.put(inl(joined));
         }
         app.put(`</td></tr></table></div>` ~ "\n");
         return app.data;
@@ -318,7 +343,7 @@ class Html5Converter : Converter
         auto app = appender!string;
         app.put(`<div class="quoteblock">`);
         if (block.title.length)
-            app.put(`<div class="title">` ~ renderInline(block.title, attrs) ~ `</div>`);
+            app.put(`<div class="title">` ~ inl(block.title) ~ `</div>`);
         app.put(`<blockquote>`);
         if (block.blocks.length)
         {
@@ -326,7 +351,7 @@ class Html5Converter : Converter
                 app.put(convertNode(c));
         }
         else
-            app.put(`<p>` ~ renderInline(joinParagraphLines(block.lines), attrs) ~ `</p>`);
+            app.put(`<p>` ~ inl(joinParagraphLines(block.lines)) ~ `</p>`);
         app.put(`</blockquote>`);
         string attribution;
         string citetitle;
@@ -353,12 +378,11 @@ class Html5Converter : Converter
         app.put(`<div class="sidebarblock">`);
         app.put(`<div class="content">`);
         if (block.title.length)
-            app.put(`<div class="title">` ~ renderInline(block.title, attrs) ~ `</div>`);
+            app.put(`<div class="title">` ~ inl(block.title) ~ `</div>`);
         foreach (c; block.blocks)
             app.put(convertNode(c));
         if (!block.blocks.length && block.lines.length)
-            app.put(`<div class="paragraph"><p>` ~ renderInline(joinParagraphLines(block.lines),
-                attrs) ~ `</p></div>`);
+            app.put(`<div class="paragraph"><p>` ~ inl(joinParagraphLines(block.lines)) ~ `</p></div>`);
         app.put(`</div></div>` ~ "\n");
         return app.data;
     }
@@ -369,7 +393,7 @@ class Html5Converter : Converter
         app.put(`<div class="exampleblock">`);
         app.put(`<div class="content">`);
         if (block.title.length)
-            app.put(`<div class="title">` ~ renderInline(block.title, attrs) ~ `</div>`);
+            app.put(`<div class="title">` ~ inl(block.title) ~ `</div>`);
         foreach (c; block.blocks)
             app.put(convertNode(c));
         app.put(`</div></div>` ~ "\n");
@@ -391,22 +415,31 @@ class Html5Converter : Converter
         auto target = block.attributes.get("target", "");
         auto alt = block.attributes.get("alt", "");
         auto imagesdir = attrs.get("imagesdir", "");
-        if (imagesdir.length && !target.canFind("://") && !target.startsWith("/"))
+        // Join imagesdir only onto a path that is already allowed. Prefixing a
+        // rejected scheme (`javascript:`) would hide it as a relative path.
+        if (urlSchemeAllowed(target) && imagesdir.length && !target.canFind("://")
+            && !target.startsWith("/") && !target.startsWith("#"))
             target = imagesdir ~ "/" ~ target;
         auto app = appender!string;
         app.put(`<div class="imageblock">`);
         app.put(`<div class="content">`);
-        app.put(`<img src="` ~ escapeHtml(target) ~ `" alt="` ~ escapeHtml(alt) ~ `"`);
-        if (auto w = "width" in block.attributes)
-            if ((*w).length)
-                app.put(` width="` ~ escapeHtml(*w) ~ `"`);
-        if (auto h = "height" in block.attributes)
-            if ((*h).length)
-                app.put(` height="` ~ escapeHtml(*h) ~ `"`);
-        app.put(`>`);
+        auto src = acceptedHref(target, true);
+        if (src.length)
+        {
+            app.put(`<img src="` ~ src ~ `" alt="` ~ escapeHtml(alt) ~ `"`);
+            if (auto w = "width" in block.attributes)
+                if ((*w).length)
+                    app.put(` width="` ~ escapeHtml(*w) ~ `"`);
+            if (auto h = "height" in block.attributes)
+                if ((*h).length)
+                    app.put(` height="` ~ escapeHtml(*h) ~ `"`);
+            app.put(`>`);
+        }
+        else if (alt.length)
+            app.put(escapeHtml(alt));
         app.put(`</div>`);
         if (block.title.length)
-            app.put(`<div class="title">` ~ renderInline(block.title, attrs) ~ `</div>`);
+            app.put(`<div class="title">` ~ inl(block.title) ~ `</div>`);
         app.put(`</div>` ~ "\n");
         return app.data;
     }
@@ -421,14 +454,14 @@ class Html5Converter : Converter
             app.put(`<` ~ tag);
             if (section.id.length)
                 app.put(` id="` ~ escapeHtml(section.id) ~ `"`);
-            app.put(` class="discrete">` ~ renderInline(section.title, attrs) ~ `</` ~ tag ~ `>` ~ "\n");
+            app.put(` class="discrete">` ~ inl(section.title) ~ `</` ~ tag ~ `>` ~ "\n");
             return app.data;
         }
         app.put(`<div class="sect` ~ to!string(level) ~ `">`);
         app.put(`<` ~ tag);
         if (section.id.length)
             app.put(` id="` ~ escapeHtml(section.id) ~ `"`);
-        app.put(`>` ~ renderInline(section.title, attrs) ~ `</` ~ tag ~ `>`);
+        app.put(`>` ~ inl(section.title) ~ `</` ~ tag ~ `>`);
         app.put(`<div class="sectionbody">`);
         foreach (child; section.blocks)
             app.put(convertNode(child));
@@ -443,12 +476,12 @@ class Html5Converter : Converter
         if (item.checklist || listStyle == "checklist")
         {
             auto mark = item.checked ? "&#10003;" : "&#10063;";
-            app.put(`<p>` ~ mark ~ ` ` ~ renderInline(item.text, attrs) ~ `</p>`);
+            app.put(`<p>` ~ mark ~ ` ` ~ inl(item.text) ~ `</p>`);
         }
         else
-            app.put(`<p>` ~ renderInline(item.text, attrs) ~ `</p>`);
+            app.put(`<p>` ~ inl(item.text) ~ `</p>`);
         if (item.lines.length)
-            app.put(`<p>` ~ renderInline(joinParagraphLines(item.lines), attrs) ~ `</p>`);
+            app.put(`<p>` ~ inl(joinParagraphLines(item.lines)) ~ `</p>`);
 
         ListItem[] nestedItems;
         foreach (c; item.blocks)
@@ -502,8 +535,8 @@ class Html5Converter : Converter
             auto item = cast(DescriptionListItem) node;
             if (item is null)
                 continue;
-            app.put(`<dt class="hdlist1">` ~ renderInline(item.term, attrs) ~ `</dt>`);
-            app.put(`<dd>` ~ renderInline(item.definition, attrs) ~ `</dd>`);
+            app.put(`<dt class="hdlist1">` ~ inl(item.term) ~ `</dt>`);
+            app.put(`<dd>` ~ inl(item.definition) ~ `</dd>`);
         }
         app.put(`</dl></div>` ~ "\n");
         return app.data;
@@ -519,7 +552,7 @@ class Html5Converter : Converter
 
         app.put(`<table class="tableblock frame-all grid-all stretch">`);
         if (table.title.length)
-            app.put(`<caption class="title">` ~ renderInline(table.title, attrs) ~ `</caption>`);
+            app.put(`<caption class="title">` ~ inl(table.title) ~ `</caption>`);
         if (widths.length && total > 0)
         {
             app.put(`<colgroup>`);
@@ -575,10 +608,10 @@ class Html5Converter : Converter
         if (cell.style == "l" || cell.style == "m")
             return `<p class="tableblock"><code>` ~ escapeHtml(cell.text) ~ `</code></p>`;
         if (cell.style == "e")
-            return `<p class="tableblock"><em>` ~ renderInline(cell.text, attrs) ~ `</em></p>`;
+            return `<p class="tableblock"><em>` ~ inl(cell.text) ~ `</em></p>`;
         if (cell.style == "s")
-            return `<p class="tableblock"><strong>` ~ renderInline(cell.text, attrs) ~ `</strong></p>`;
-        return renderInline(cell.text, attrs);
+            return `<p class="tableblock"><strong>` ~ inl(cell.text) ~ `</strong></p>`;
+        return inl(cell.text);
     }
 
     private string defaultCss()

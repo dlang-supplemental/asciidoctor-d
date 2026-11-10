@@ -125,6 +125,44 @@ unittest
     auto src = q"EOS
 = T
 
+link:javascript:alert(1)[click]
+link:data:text/html,hi[data]
+https://example.com[ok]
+image:javascript:alert(1)[hidden]
+EOS";
+    ConvertOptions opts;
+    opts.standalone = false;
+    opts.secure = true;
+    auto html = convert(src, opts);
+    assert(html.canFind("click"), html);
+    assert(!html.canFind("javascript:"), html);
+    assert(!html.canFind("data:text"), html);
+    assert(html.canFind(`href="https://example.com"`), html);
+    assert(!html.canFind("<img"), html);
+}
+
+unittest
+{
+    auto src = "image:photo.png[Alt]\n\n<<intro>>\n\n== Intro\n\nHi.\n";
+    ConvertOptions opts;
+    opts.standalone = false;
+    opts.urlFilter = (string url, bool isImage) {
+        if (isImage)
+            return "https://cdn.example/" ~ url;
+        if (url.startsWith("#"))
+            return "https://example.com/README.adoc" ~ url;
+        return url;
+    };
+    auto html = convert(src, opts);
+    assert(html.canFind(`src="https://cdn.example/photo.png"`), html);
+    assert(html.canFind(`href="https://example.com/README.adoc#intro"`), html);
+}
+
+unittest
+{
+    auto src = q"EOS
+= T
+
 * [ ] todo
 * [x] done
 EOS";

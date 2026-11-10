@@ -32,7 +32,7 @@ string convert(string source, string backend = "html5", string baseDir = ".")
  *
  * Params:
  *   source = AsciiDoc text
- *   opts   = conversion options (`backend`, `baseDir`, `standalone`, `secure`)
+ *   opts   = conversion options (`backend`, `baseDir`, `standalone`, `secure`, `urlFilter`)
  */
 string convert(string source, ConvertOptions opts)
 {

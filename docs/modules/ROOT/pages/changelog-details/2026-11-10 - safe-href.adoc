@@ -1,0 +1,13 @@
+= 2026-11-10
+:hide-page:
+:navtree-parent: changelog.adoc
+:page-audience: library users
+:page-usage-context: explanation
+:page-orig-author: Cursor Grok 4.7 on behalf of Ryan Johnson
+:page-last-author: Cursor Grok 4.7 on behalf of Ryan Johnson
+
+== Safe href and src
+
+`ConvertOptions.urlFilter` receives each URL before the HTML5 converter writes `href` or `src`. The converter then keeps only `http`, `https`, `mailto`, a fragment, or a relative path.
+
+A `javascript:` or `data:` link is not emitted. The visible label stays as text. The same check applies to images, cross references, and the table of contents.

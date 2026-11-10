@@ -1,0 +1,28 @@
+= Changelog
+:toc:
+:toclevels: 3
+:page-audience: library users
+:page-usage-context: reference
+:page-orig-author: Cursor Grok 4.7 on behalf of Ryan Johnson
+:page-last-author: Cursor Grok 4.7 on behalf of Ryan Johnson
+
+== 2026-11-10
+
+HTML links and images stay on an allowlist.
+
+=== Safe href and src
+* `ConvertOptions.urlFilter` rewrites a URL before it is written into `href` or `src`.
+* Emitted URLs are limited to `http`, `https`, `mailto`, a fragment, or a relative path. Any other scheme, a protocol-relative URL, or a URL that contains an ASCII space or control is left out. The link or image label stays as text.
+
+== 2026-10-20
+
+Hot reload IPC groundwork.
+
+=== Fixes
+* CLI: pass `args` to `getopt` by reference so `serve`, `watch`, and `convert` build and parse options (the application configuration failed to compile).
+
+=== Serve daemon and protocol v1
+* `asciidoctor-d serve` — NDJSON stdin/stdout; optional `--http HOST:PORT` (`GET /v1/health`, `POST /v1/convert`).
+* `asciidoctor-d watch` — poll-based full reconvert events for local experiments.
+* https://github.com/dlang-supplemental/asciidoctor-d/blob/main/docs/HOT-RELOAD.adoc[Hot-reload contract] — reserved `fromLine` / `toLine` / `blockId` fields.
+* https://github.com/dlang-supplemental/asciidoctor-d/blob/main/ROADMAP.adoc#_m7_hot_reload_ipc[M7 milestone] on the roadmap.

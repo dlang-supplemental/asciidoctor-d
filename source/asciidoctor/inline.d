@@ -15,6 +15,92 @@ string escapeHtml(string s)
         .replace("\"", "&quot;");
 }
 
+/// True when `url` may be written into `href` or `src`.
+/// Allows `http`, `https`, `mailto`, a fragment, and a relative path.
+/// Rejects every other scheme, a protocol-relative URL (`//host`), and any
+/// ASCII space or control. Browsers strip those characters before they read
+/// the scheme, so a pattern that only looks for the word `javascript` misses them.
+bool urlSchemeAllowed(string url) pure
+{
+    foreach (c; url)
+    {
+        if (c <= 0x20 || c == 0x7F)
+            return false;
+    }
+    if (url.length == 0)
+        return false;
+    if (url.length >= 2 && url[0] == '/' && url[1] == '/')
+        return false;
+
+    if (isAsciiAlpha(url[0]))
+    {
+        size_t i = 1;
+        while (i < url.length && isSchemeChar(url[i]))
+            i++;
+        if (i < url.length && url[i] == ':')
+        {
+            auto scheme = url[0 .. i];
+            return schemeEquals(scheme, "http")
+                || schemeEquals(scheme, "https")
+                || schemeEquals(scheme, "mailto");
+        }
+    }
+    return true;
+}
+
+/// Apply `filter` when set, then the scheme allowlist.
+/// `accepted` is the URL to emit when this returns true.
+bool tryAcceptUrl(string url, bool isImage, string delegate(string, bool) filter, out string accepted)
+{
+    if (filter !is null)
+        url = filter(url, isImage);
+    if (!urlSchemeAllowed(url))
+        return false;
+    accepted = url;
+    return true;
+}
+
+private bool isAsciiAlpha(char c) pure
+{
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+
+private bool isSchemeChar(char c) pure
+{
+    return isAsciiAlpha(c) || (c >= '0' && c <= '9') || c == '+' || c == '-' || c == '.';
+}
+
+private bool schemeEquals(string scheme, string expect) pure
+{
+    if (scheme.length != expect.length)
+        return false;
+    foreach (i, c; scheme)
+    {
+        char folded = (c >= 'A' && c <= 'Z') ? cast(char)(c + 32) : c;
+        if (folded != expect[i])
+            return false;
+    }
+    return true;
+}
+
+unittest
+{
+    assert(urlSchemeAllowed("https://example.com/a"));
+    assert(urlSchemeAllowed("HTTP://example.com/a"));
+    assert(urlSchemeAllowed("mailto:a@b.com"));
+    assert(urlSchemeAllowed("page.html"));
+    assert(urlSchemeAllowed("../img/a.png"));
+    assert(urlSchemeAllowed("/abs/path"));
+    assert(urlSchemeAllowed("#section"));
+    assert(!urlSchemeAllowed(""));
+    assert(!urlSchemeAllowed("javascript:alert(1)"));
+    assert(!urlSchemeAllowed("JavaScript:alert(1)"));
+    assert(!urlSchemeAllowed("data:text/html,hi"));
+    assert(!urlSchemeAllowed("//evil.example/a"));
+    assert(!urlSchemeAllowed("java\tscript:alert(1)"));
+    assert(!urlSchemeAllowed("java\nscript:alert(1)"));
+}
+
 /// Apply attribute substitutions of the form {name}.
 string substituteAttributes(string text, string[string] attrs)
 {
@@ -54,7 +140,8 @@ private struct Piece
 }
 
 /// Convert AsciiDoc inline markup to HTML.
-string renderInline(string text, string[string] attrs = null, bool escape = true)
+string renderInline(string text, string[string] attrs = null, bool escape = true,
+    string delegate(string, bool) urlFilter = null)
 {
     text = substituteAttributes(text, attrs);
 
@@ -65,16 +152,16 @@ string renderInline(string text, string[string] attrs = null, bool escape = true
     work = extractPassthrough(work, pieces);
 
     // Links: http(s)://...[label] and link:target[label]
-    work = extractLinks(work, pieces);
+    work = extractLinks(work, pieces, urlFilter);
 
     // image:target[alt]
-    work = extractImages(work, pieces);
+    work = extractImages(work, pieces, urlFilter);
 
     // kbd / btn / menu (experimental macros)
     work = extractUiMacros(work, pieces);
 
     // xref:target[text] and <<id,text>>
-    work = extractXrefs(work, pieces);
+    work = extractXrefs(work, pieces, urlFilter);
 
     // footnote:[text] and footnote:id[text]
     work = extractFootnotes(work, pieces);
@@ -140,74 +227,79 @@ private string extractPassthrough(string work, ref Piece[] pieces)
     })(work, re);
 }
 
-private string extractLinks(string work, ref Piece[] pieces)
+private string anchorHtml(string url, string label, bool isImage, string delegate(string, bool) urlFilter)
+{
+    string accepted;
+    if (!tryAcceptUrl(url, isImage, urlFilter, accepted))
+        return escapeHtml(label);
+    return `<a href="` ~ escapeHtml(accepted) ~ `">` ~ escapeHtml(label) ~ `</a>`;
+}
+
+private string imageHtml(string url, string alt, string delegate(string, bool) urlFilter)
+{
+    string accepted;
+    if (!tryAcceptUrl(url, true, urlFilter, accepted))
+        return escapeHtml(alt);
+    return `<img src="` ~ escapeHtml(accepted) ~ `" alt="` ~ escapeHtml(alt) ~ `">`;
+}
+
+private string stash(ref Piece[] pieces, string html)
+{
+    auto idx = pieces.length;
+    pieces ~= Piece(true, html);
+    return "\x01" ~ to!string(idx) ~ "\x02";
+}
+
+private string extractLinks(string work, ref Piece[] pieces, string delegate(string, bool) urlFilter)
 {
     // URL with optional [label]
     auto urlRe = regex(`(https?://[^\s\[\]]+)(?:\[([^\]]*)\])?`);
     work = replaceAll!((Captures!string c) {
         auto url = c[1];
         auto label = c[2].length ? c[2] : url;
-        auto html = `<a href="` ~ escapeHtml(url) ~ `">` ~ escapeHtml(label) ~ `</a>`;
-        auto idx = pieces.length;
-        pieces ~= Piece(true, html);
-        return "\x01" ~ to!string(idx) ~ "\x02";
+        return stash(pieces, anchorHtml(url, label, false, urlFilter));
     })(work, urlRe);
 
     auto linkRe = regex(`link:([^\[]+)\[([^\]]*)\]`);
     work = replaceAll!((Captures!string c) {
-        auto html = `<a href="` ~ escapeHtml(c[1]) ~ `">` ~ escapeHtml(c[2]) ~ `</a>`;
-        auto idx = pieces.length;
-        pieces ~= Piece(true, html);
-        return "\x01" ~ to!string(idx) ~ "\x02";
+        return stash(pieces, anchorHtml(c[1], c[2], false, urlFilter));
     })(work, linkRe);
 
     auto mailtoRe = regex(`mailto:([^\[]+)\[([^\]]*)\]`);
     work = replaceAll!((Captures!string c) {
-        auto html = `<a href="mailto:` ~ escapeHtml(c[1]) ~ `">` ~ escapeHtml(c[2].length ? c[2] : c[1]) ~ `</a>`;
-        auto idx = pieces.length;
-        pieces ~= Piece(true, html);
-        return "\x01" ~ to!string(idx) ~ "\x02";
+        auto label = c[2].length ? c[2] : c[1];
+        return stash(pieces, anchorHtml("mailto:" ~ c[1], label, false, urlFilter));
     })(work, mailtoRe);
 
     return work;
 }
 
-private string extractImages(string work, ref Piece[] pieces)
+private string extractImages(string work, ref Piece[] pieces, string delegate(string, bool) urlFilter)
 {
     auto re = regex(`image:([^\[]+)\[([^\]]*)\]`);
     return replaceAll!((Captures!string c) {
-        auto target = c[1];
         auto alt = c[2];
         // first positional is alt; ignore width/height for now beyond alt
         auto altText = alt.split(",")[0].strip;
-        auto html = `<img src="` ~ escapeHtml(target) ~ `" alt="` ~ escapeHtml(altText) ~ `">`;
-        auto idx = pieces.length;
-        pieces ~= Piece(true, html);
-        return "\x01" ~ to!string(idx) ~ "\x02";
+        return stash(pieces, imageHtml(c[1], altText, urlFilter));
     })(work, re);
 }
 
-private string extractXrefs(string work, ref Piece[] pieces)
+private string extractXrefs(string work, ref Piece[] pieces, string delegate(string, bool) urlFilter)
 {
     auto xrefRe = regex(`xref:([^\[]+)\[([^\]]*)\]`);
     work = replaceAll!((Captures!string c) {
         auto target = c[1];
         auto label = c[2].length ? c[2] : target;
         auto href = target.canFind("#") || target.canFind(".") ? target : ("#" ~ target);
-        auto html = `<a href="` ~ escapeHtml(href) ~ `">` ~ escapeHtml(label) ~ `</a>`;
-        auto idx = pieces.length;
-        pieces ~= Piece(true, html);
-        return "\x01" ~ to!string(idx) ~ "\x02";
+        return stash(pieces, anchorHtml(href, label, false, urlFilter));
     })(work, xrefRe);
 
     auto angleRe = regex(`<<([^,>]+)(?:,([^>]*))?>>`);
     work = replaceAll!((Captures!string c) {
         auto id = c[1].strip;
         auto label = c[2].length ? c[2].strip : id;
-        auto html = `<a href="#` ~ escapeHtml(id) ~ `">` ~ escapeHtml(label) ~ `</a>`;
-        auto idx = pieces.length;
-        pieces ~= Piece(true, html);
-        return "\x01" ~ to!string(idx) ~ "\x02";
+        return stash(pieces, anchorHtml("#" ~ id, label, false, urlFilter));
     })(work, angleRe);
 
     return work;

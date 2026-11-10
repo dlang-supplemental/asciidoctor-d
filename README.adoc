@@ -343,7 +343,15 @@ import asciidoctor;
 auto html = convert(source, "html5", baseDir);
 auto man = convert(source, "manpage", baseDir);
 auto pdf = convert(source, "pdf", baseDir);
+
+ConvertOptions opts;
+opts.standalone = false; // embeddable fragment
+opts.secure = true;      // escape raw HTML passthrough
+opts.urlFilter = (string url, bool isImage) => url;
+html = convert(source, opts);
 ----
+
+`urlFilter` runs before the href/src allowlist (`http`, `https`, `mailto`, fragments, relative paths).
 
 link:#readme-top[back to top]
 
@@ -371,7 +379,7 @@ Hot reload / antora-solidstart IPC: link:docs/HOT-RELOAD.adoc[docs/HOT-RELOAD.ad
 
 Distribution (releases + Zed wiring): link:docs/DISTRIBUTION.adoc[docs/DISTRIBUTION.adoc]
 
-Changelog: link:changelog.adoc[changelog.adoc]
+Changelog: https://dlang-supplemental.github.io/docs/asciidoctor-d/changelog/[changelog]
 
 == License
 
